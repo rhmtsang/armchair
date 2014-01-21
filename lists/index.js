@@ -19,7 +19,7 @@ function(head, req) {
     var stash = {
       header : {
         index : indexPath,
-        blogName : ddoc.blog.title,
+        blogName : ddoc.elog.title,
         feedPath : feedPath,
         commentsFeed : commentsFeed
       },
@@ -75,7 +75,7 @@ function(head, req) {
     // generate the feed header
     var feedHeader = Atom.header({
       updated : (row ? new Date(row.value.created_at) : new Date()),
-      title : ddoc.blog.title,
+      title : ddoc.elog.title,
       feed_id : path.absolute(indexPath),
       feed_link : path.absolute(feedPath),
     });

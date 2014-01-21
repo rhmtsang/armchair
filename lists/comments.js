@@ -22,7 +22,7 @@ function(head, req) {
     // generate the feed header
     var feedHeader = Atom.header({
       updated : (row ? new Date(row.value.created_at) : new Date()),
-      title : ddoc.blog.title + " comments",
+      title : ddoc.elog.title + " comments",
       feed_id : path.absolute(indexPath),
       feed_link : path.absolute(commentsFeed)
     });

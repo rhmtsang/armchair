@@ -10,7 +10,7 @@ function(doc, req) {
   var data = {
     header : {
       index : indexPath,
-      blogName : ddoc.blog.title,
+      blogName : ddoc.elog.title,
       feedPath : feedPath,
       commentsFeed : commentsFeed
     },

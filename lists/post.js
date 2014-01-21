@@ -27,7 +27,7 @@ function(head, req) {
       var stash = {
         header : {
           index : indexPath,
-          blogName : ddoc.blog.title,
+          blogName : ddoc.elog.title,
           feedPath : feedPath,
           commentsFeed : commentsFeed
         },

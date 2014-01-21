@@ -1,12 +1,10 @@
-# Sofa: Standalone CouchDB Blog
+# Armchair: Standalone CouchDB E-Log
 
-Sofa showcases the [potential of pure CouchDB applications](http://jchris.mfdz.com/code/2008/10/standalone_applications_with_co). It should provide an easy way for people to put thier thoughts online, anywhere there's a running Couch. It's just HTML, JavaScript and the magic of CouchDB.
+Armchair began as a clone of Sofa [a potential of pure CouchDB applications](http://jchris.mfdz.com/code/2008/10/standalone_applications_with_co). It should provide an easy way for scientists to put thier work online, anywhere there's a running Couch. It's just HTML, JavaScript and the magic of CouchDB. The goal is more accountability (delete is discouraged, if not outright not supported). Requires valid user to view, and post. All entires signed by user/time. 
 
-Currently supports authoring by anyone with the proper roles, and comments from anyone with a user account.
 
 ## Current News
 
-Things are moving crazy fast around here right now as I bring this stuff up to ship-shape for the [CouchDB book](http://books.couchdb.org). I'll be renaming methods and stuff (if I find the time), any API feedback will be appreciated.
 
 ## Install CouchDB
 
@@ -24,24 +22,25 @@ CouchApp is a set of utilities for developing standalone CouchDB applications Yo
 
 ### Setup Admin Access
 
-If you are going to put your blog in public, you'll want to [set up an Admin account (screencast)](http://www.youtube.com/watch?v=oHKvV3Nh-CI).
+* curl -X PUT $HOST/_config/admins/<user> -d '"<pass>"'
+* curl -X PUT http://<admin>:<adminpass>@localhost:5984/_users/org.couchdb.user:<user> -H "Accept: application/json" -H "Content-Type: application/json" -d '{"name": "<user>", "password":"<userpass>","roles":[],"type":"user"}'
+* In config, enable couch_httpd_auth/require_valid_user = True
 
+## Install Armchair
 
-## Install Sofa
-
-    git clone git://github.com/jchris/sofa.git
-    cd sofa
-    couchapp push . http://user:pass@127.0.0.1:5984/myblogdb 
+    git clone https://github.com/bungernut/armchair.git
+    cd armchair
+    couchapp push . http://user:pass@127.0.0.1:5984/elog 
   
 You'll want to edit the HTML and CSS to personalize your site. Don't worry, the markup is pretty basic, so it's easy to rework. Adding new features is just a few lines of JavaScript away.
 
-Anytime you make edits to the on-disk version of Sofa, and want to see them in your browser, just run `couchapp push . http://127.0.0.1:5984/blogdb` again. **You probably want to setup your `.couchapprc` file.** You should read the CouchApp readme to learn about that.
+Anytime you make edits to the on-disk version of Armchair, and want to see them in your browser, just run `couchapp push . http://127.0.0.1:5984/elog` again. **You probably want to setup your `.couchapprc` file.** You should read the CouchApp readme to learn about that.
 
-You can customize the blog title and other stuff in the `blog.json` file.
+You can customize the blog title and other stuff in the `elog.json` file.
 
 # Relax
 
-[Visit your new blog.](http://127.0.0.1:5984/blogdb/_design/sofa/_list/index/recent-posts?descending=true&limit=5)
+[Visit your new elog.](http://127.0.0.1:5984/elog/_design/armchair/_list/index/recent-posts?descending=true&limit=5)
 
 ## License
 
