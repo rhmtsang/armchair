@@ -12,14 +12,14 @@ body {
 }
 
 #account {
-  font-size:0.8em;
-  text-shadow: #fff 0 0 4px;
+  font-size:0.9em;
+  /*text-shadow: #777 0 0 4px;*/
   float:right;
 }
 
 #feeds {
-  font-size:0.6em;
-  text-shadow: #fff 0 0 4px;
+  font-size:0.9em;
+  text-shadow: #999 0 0 4px;
 }
 
 a {
@@ -44,7 +44,7 @@ h2 {
 }
 
 #header h2 a {
-  color:#fff;
+  color:#ccc;
 }
 
 #header #login, #header #edit {
@@ -61,23 +61,27 @@ h4 {
 }
 
 #header {
-  background:#9a9;
-  padding:8px;
-  border-bottom: 1em solid #b9dab9;
+  background:#666;
+  padding-left:10px;
+  padding-right:10px;
+  padding-top:5px;
+  padding-bottom:5px;
+  border-bottom: 0.2em solid #44a;
 }
 
 #content {
-  width:700px;
+  width:80%;
   padding:10px;
   background:#f9f9f9;
-/*  float:left;*/
+  float:center;
   margin-top:0;
-  margin-left:240px;
+  margin-left:18%;
+  margin-right:2%;
 }
 
 #tagcloud {
   float:left;
-  width:220px;
+  width:16%;
   margin:2ex 1em;
 }
 
