@@ -132,8 +132,9 @@
       dbname = opts.db || fragments[index + 2],
       dname = opts.design || fragments[index + 4];
     $.couch.urlPrefix = urlPrefix;
-    var db = $.couch.db(dbname),
+    var db = $.couch.db(dbname), //{attachPrevRev : true}),
       design = new Design(db, dname, opts.load_path);
+    //window.alert("XXX ***** in jquery.couch.app.js *****");
     var appExports = $.extend({
       db : db,
       design : design,

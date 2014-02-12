@@ -25,7 +25,8 @@ function (newDoc, oldDoc, userCtx, secObj) {
     if (!v.isAuthor()) {
       v.unauthorized("Only authors may edit posts.");
     }
-    v.require("created_at", "author", "body", "format", "title");
+    //v.require("created_at", "author", "body", "format", "title");
+    v.require("created_at", "author", "format");
   } else if (newDoc.type == 'comment') {
     v.require("created_at", "post_id", "comment", "format", "commenter");
     v.assert((newDoc.commenter.name || newDoc.commenter.nickname) && (typeof newDoc.commenter.email != "undefined"), 

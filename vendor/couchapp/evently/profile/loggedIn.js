@@ -2,7 +2,7 @@ function(e, r) {
   var userCtx = r.userCtx;
   var widget = $(this);
   // load the profile from the user doc
-  var db = $.couch.db(r.info.authentication_db);
+  var db = $.couch.db(r.info.authentication_db);//,{attachPrevRev : true});
   var userDocId = "org.couchdb.user:"+userCtx.name;
   db.openDoc(userDocId, {
     success : function(userDoc) {

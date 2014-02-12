@@ -17,9 +17,10 @@ function(head, req) {
       throw(["error", "not_found", "not a post"]);
     } else {
       if (post.format == "markdown") {
-        var html = markdown.encode(post.body);
+
+        var html = markdown.encode(post.description);
       } else if (post.format == "textile") {
-        var html = textile.encode(post.body);
+        var html = textile.encode(post.description);
       } else {
         var html = Mustache.escape(post.html);
       }
@@ -36,6 +37,9 @@ function(head, req) {
         post_id : post._id,
         date : post.created_at,
         html : html,
+        mass : post.mass,
+        vendor : post.vendor,
+        batch_number : post.batch_number,
         comments : List.withRows(function(row) {
           var v = row.value;
           if (v.type != "comment") {
