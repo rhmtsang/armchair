@@ -1,16 +1,1 @@
-Armchair THANKS
-=====================
 
-Jan2014 - Peope who made Sofa possible :), git fork from jhris/sofa
-
-Sofa THANKS
-=====================
-
-A number of people have contributed to Sofa by reporting problems,
-suggesting improvements, submitting changes or asking hard questions.
-
-Some of these people are:
-
-* Andy Wenk <andy.wenk@googlemail.com>
-* Jan Lehnardt
-* You

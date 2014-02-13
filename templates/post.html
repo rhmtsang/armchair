@@ -2,28 +2,28 @@
 <html>
   <head>
     <title>{{ title }} : {{ blogName }}</title>
-    <link rel="stylesheet" href="../../style/screen.css" type="text/css">
+    <!-- <link rel="stylesheet" href="../../style/screen.css" type="text/css"> -->
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
   </head>
   <body>
-    {{>header}}
-    <div id="content">
-      <h1>{{ title }}</h1>
-      <div id="post">
-        <span class="date">{{ date }}</span>
-        <div>{{{ mass }}}</div>
-        <div>{{{ vendor }}}</div>
-        <div>{{{ batch_number }}}</div>
-        <div class="body">{{{ html }}}</div>
+    <div class="container-fluid">
+      {{>header}}
+      <div class="row">
+        <div class="col-sm-12">
+          <h3>{{ title }}</h3>
+        </div>
       </div>
-      <div id="tags"></div>
-      <div id="comments">
-        <ul>
-          {{#comments}}
-            {{>comment}}
-          {{/comments}}
-        </ul>
-        <div id="profile"></div>
+      <div class="row">
+        <div class="col-sm-12">
+          <span class="date">{{ date }}</span>
+          <div>{{{ mass }}}</div>
+          <div>{{{ vendor }}}</div>
+          <div>{{{ batch_number }}}</div>
+          <div class="body">{{{ html }}}</div>
+          <small><div id="tags"></div></small>
+        </div>
       </div>
+      {{>footer}}
     </div>    
   </body>
   {{>scripts}}

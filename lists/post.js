@@ -32,6 +32,7 @@ function(head, req) {
           feedPath : feedPath,
           commentsFeed : commentsFeed
         },
+        footer : {},
         scripts : {},
         title : post.title,
         post_id : post._id,

@@ -1,14 +1,11 @@
-<div id="header">
-  <div id="account"></div>
-  <h2><a href="{{ index }}">{{ blogName }}</a></h2>
-  <div id="feeds">
-    <!-- TODO:BM
-    This is where the list of tabs goes
-    -->
-    Home * Search * New
-    <!--Atom feeds of
-    <a href="{{feedPath}}">posts</a> &amp;
-    <a href="{{commentsFeed}}">comments</a>.
-    -->
+<div class="row">
+  <div class="col-xs-8"><h3><a href="{{ index }}"><strong>{{ blogName }}</strong></a></h3></div>
+  <div id="account" class="col-xs-4 pull-right"></div>
+</div>
+<div class="row">
+  <div class="col-md-12">
+    <div id="links"> 
+      <a href="{{index}}">Home</a> | Material Samples | Counting Results | Monte Carlo | Background Calculation | Search 
+    </div>
   </div>
 </div>

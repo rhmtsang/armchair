@@ -1,41 +1,61 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>{{ title }}</title>
-    <link rel="stylesheet" href="../../style/screen.css" type="text/css"/>
-    <link rel="alternate" type="application/atom+xml" 
-      title="Atom Feed" href="{{ feedPath }}"/>
-  </head>
-  <body>
-    {{>header}}
-    <div id="tagcloud"></div>
-    <div id="content">
-      <h1>Recently...</h1>
-      <ul id="posts">
-        {{#posts}}
-          <li>
-            <h3><a href="{{ link }}">{{ title }}</a></h3>
-            {{#has_tags}}
-              <div class="tags">
-                {{#tags}}
-                  <a href="{{link}}">{{tag}}</a>
-                {{/tags}}
-              </div>
-            {{/has_tags}}
-            <div class="by">
-              <span class="date">{{ date }}</span> 
-              by {{author}}
-            </div>
-          </li>
-        {{/posts}}
-    </ul>
-    <div class="paginate">
-      <a href="{{ older }}">older posts</a>
-      <a href="{{5}}">5</a>
-      <a href="{{10}}">10</a>
-      <a href="{{25}}">25</a>      
+<head>
+  <title>{{ title }}</title>
+  <!-- <link rel="stylesheet" href="../../style/screen.css" type="text/css"/> -->
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
+  <!-- <link rel="alternate" type="application/atom+xml" title="Atom Feed" href="{{ feedPath }}"/> -->
+</head>
+<body>
+<div class="container-fluid">
+  {{>header}}
+  <div class="row">
+    <div class="col-sm-9">
+      <div class="table-responsive">
+        <table class="table table-hover table-condensed" id="posts">
+          <thead>
+            <tr>
+              <th width="25%"> Date</th>
+              <th width="50%"> Title</th>
+              <th width="25%"> Author</th>
+            </tr>
+          </thead>
+          <tbody>
+            {{#posts}}
+            <tr>
+              <td class="date">
+                <!-- <span class="date">{{ date }}</span> -->
+                {{ date }}
+              </td>
+              <td>
+                <a href="{{ link }}"><strong>{{ title }}</strong><br></a>
+                {{#has_tags}}
+                  {{#tags}}
+                    <a href="{{link}}"><button type="button" class="btn btn-default btn-xs"><small>{{tag}}</small></button></a>
+                  {{/tags}}
+                {{/has_tags}}
+              </td>
+              <td>
+                {{author}} 
+              </td>
+            </tr>
+            {{/posts}}
+          </tbody>
+        </table>
+      </div>
+      <div class="paginate">
+        <a href="{{ older }}">older posts</a>
+        <a href="{{5}}">5</a>
+        <a href="{{10}}">10</a>
+        <a href="{{25}}">25</a>      
+      </div>
+    </div>
+    <div class="col-sm-3">
+      <div id="tagcloud"></div>
     </div>
   </div>
+  {{>footer}}
+</div>
 </body>
 {{>scripts}}
 <script type="text/javascript" charset="utf-8">

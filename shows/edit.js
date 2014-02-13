@@ -14,6 +14,7 @@ function(doc, req) {
       feedPath : feedPath,
       commentsFeed : commentsFeed
     },
+    footer : {},
     scripts : {},
     pageTitle : doc ? "Edit: "+doc.title : "Create a new post",
     assets : path.asset()

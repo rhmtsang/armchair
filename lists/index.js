@@ -23,6 +23,7 @@ function(head, req) {
         feedPath : feedPath,
         commentsFeed : commentsFeed
       },
+      footer : {},
       scripts : {},
       db : req.path[0],
       design : req.path[2],
@@ -88,10 +89,10 @@ function(head, req) {
       do {
         if (row.value.format == "markdown") {
           var html = markdown.encode(row.value.body);
-        } else if (row.value.format == "textile") {
-          var html = textile.encode(row.value.body);
-        } else {
-          var html = Mustache.escape(row.value.html);
+        //} else if (row.value.format == "textile") {
+        //  var html = textile.encode(row.value.body);
+        //} else {
+        //  var html = Mustache.escape(row.value.html);
         }
         // generate the entry for this row
         var feedEntry = Atom.entry({

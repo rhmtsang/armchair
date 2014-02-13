@@ -2,42 +2,65 @@
 <html>
   <head>
     <title>{{ pageTitle }}</title>
-    <link rel="stylesheet" href="{{ assets }}/style/screen.css" type="text/css">
-    <!-- <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css"> -->
+    <!-- <link rel="stylesheet" href="{{ assets }}/style/screen.css" type="text/css"> -->
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
   </head>
   <body>
-    {{>header}}
-    <div id="tagcloud"></div>
-    <div id="content">
-    <!-- form to create a post -->
-    <form id="new-post" action="new.html" method="post">
-      <h1>{{pageTitle}}</h1>
-        <p>
-          <label>Sample name</label>
-          <input type="text" size="50" name="title" value="{{title}}">
-          <label>mass</label>
-          <input size="50" type="text" name="mass" value="{{mass}}">
-          <label>vendor</label>
-          <input size="50" type="text" name="vendor" value="{{vendor}}">
-          <label>batch number</label>
-          <input size="50" type="text" name="batch_number" value="{{batch_number}}">
-        </p> 
-        <p>
-          <label>Description</label>
-          <textarea name="description" rows="10" cols="80">{{description}}</textarea>
-        </p>
-        <p>
-          <label for="tags">Click tags to add them. (split by ',')</label>
-          <input size="50" type="text" name="tags" value="{{tags}}">
-        </p>
-        <p>
-          <input id="preview" type="button" value="Preview"/>
-          <input type="submit" value="Save &rarr;"/> 
-          <span id="saved" style="display:none;">Saved</span>
-        </p>
-    </form>
-    <a target="_new" href="http://warpedvisions.org/projects/markdown-cheat-sheet/">Markdown help</a>
-      <div id="show-preview"></div>
+    <div class="container-fluid">
+      {{>header}}
+      <div class="row">
+        <!-- form to create a post -->
+        <div class="col-sm-9">
+          <form role="form" id="new-post" action="new.html" method="post">
+            <h3>{{pageTitle}}</h3>
+            <div class="form-group">
+              <label for="title">Sample name</label>
+              <input type="text" size="50" name="title" value="{{title}}">
+            </div>
+            <div class="form-group">
+              <label for="mass">mass</label>
+              <input size="50" type="text" name="mass" value="{{mass}}">
+            </div>
+            <div class="form-group">
+              <label>vendor</label>
+              <input size="50" type="text" name="vendor" value="{{vendor}}">
+            </div>
+            <div class="form-group">
+              <label>batch number</label>
+              <input size="50" type="text" name="batch_number" value="{{batch_number}}">
+            </div>
+            <div class="form-group">
+              <label>Description</label>
+              <textarea name="description" rows="10" cols="80">{{description}}</textarea>
+            </div>
+            <div class="form-group">
+              <label for="tags">Click tags to add them. (split by ',')</label>
+              <input size="50" type="text" name="tags" value="{{tags}}">
+            </div>
+            <div class="row">
+              <div class="col-sm-3" id="show-delete"> </div>
+              <div class="col-sm-3" id="show-confirm-delete"></div>
+              <div class="col-sm-3">
+                <button id="preview" type="button" class="btn btn-default">Preview</button>
+              </div>
+              <div class="col-sm-3">
+                <button type="submit" class="btn btn-primary">Save &rarr;</button> 
+              </div>
+              <span id="saved" style="display:none;">Saved</span>
+            </div>
+          </form>
+          <!-- <a target="_new" href="http://warpedvisions.org/projects/markdown-cheat-sheet/">Markdown help</a>  -->
+        </div> 
+        <div class="col-sm-3">
+          <div id="tagcloud"></div>
+        </div> 
+      </div>
+      <div class="row">
+        <div class="col-sm-12">
+          <div id="show-preview"></div>
+        </div>
+      </div>
+      {{>footer}}
     </div>
   </body>
   {{>scripts}}
@@ -86,9 +109,9 @@
         if (!postDoc._id) {
           postDoc._id = blog.slugifyString(postDoc.title);
         }else{
-          postDoc._attachments = postDoc._attachments || {};
-          var attname = "rev-"+postDoc._rev.split("-")[0];
-          postDoc._attachments[attname] = {content_type :"application/json", data : Base64.encode(prevRev)};
+          //postDoc._attachments = postDoc._attachments || {};
+          //var attname = "rev-"+postDoc._rev.split("-")[0];
+          //postDoc._attachments[attname] = {content_type :"application/json", data : Base64.encode(prevRev)};
         }
         app.db.saveDoc(postDoc, {
           success : function(resp) {
@@ -100,14 +123,21 @@
       });
 
       if (postDoc._id) {
-        $('#preview').before('<input type="button" id="delete" value="Delete Post"/> ');
+        $('#show-delete').html(' <button class="btn btn-default" type="button" id="delete"> Delete Post </button> ');
+        //$('#preview').before(' <button class="btn btn-default" type="button" id="delete"> Delete Post </button> ');
         $("#delete").click(function() {
-          app.db.deleteDoc(postDoc, {
-            success : function(resp) {
-              $("h1").text("Deleted "+resp.id);
-              $('form#new-post input').attr('disabled', true);
-            }
-          });
+          var html = ' <button type="button" id="confirm-delete" class="btn btn-danger">Confirm Delete</button> '; 
+          $('#show-confirm-delete').html(html);
+          //$('#delete').after(html);
+            $("#confirm-delete").click(function() {
+              app.db.removeDoc(postDoc, {
+                success : function(resp) {
+                  $("h1").text("Deleted "+resp.id);
+                  $('form#new-post input').attr('disabled', true);
+                }
+              });
+              return false;
+            });
           return false;
         });
       }
