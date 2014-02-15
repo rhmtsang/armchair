@@ -16,31 +16,33 @@ function(head, req) {
     if (post.type != "post") {
       throw(["error", "not_found", "not a post"]);
     } else {
+      /*
       if (post.format == "markdown") {
-
         var html = markdown.encode(post.description);
       } else if (post.format == "textile") {
         var html = textile.encode(post.description);
       } else {
         var html = Mustache.escape(post.html);
-      }
+      } */
+      var html = Mustache.escape(post.html);
 
       var stash = {
         header : {
           index : indexPath,
-          blogName : ddoc.elog.title,
+          blogName : ddoc.elog.title,   //canont access with {{header.blogName}}. don't know why.
           feedPath : feedPath,
           commentsFeed : commentsFeed
         },
+        blogName : ddoc.elog.title,
         footer : {},
         scripts : {},
-        title : post.title,
         post_id : post._id,
         date : post.created_at,
-        html : html,
-        mass : post.mass,
-        vendor : post.vendor,
-        batch_number : post.batch_number,
+        title : post.title,
+        fields : post.fields,
+        tags : post.tags.join(', '),
+        has_tags : post.tags ? true : false,       
+        html : html/*,
         comments : List.withRows(function(row) {
           var v = row.value;
           if (v.type != "comment") {
@@ -56,7 +58,7 @@ function(head, req) {
               created_at : v.created_at
             }
           };
-        })
+        })*/
       };
       return Mustache.to_html(ddoc.templates.post, stash, ddoc.templates.partials, List.send);   
     }

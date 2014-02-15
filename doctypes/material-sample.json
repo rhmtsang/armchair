@@ -1,0 +1,18 @@
+{
+  "title" : "",
+       "fields": [
+           {
+               "label": "Sample name"
+           },
+           {
+               "label": "Mass"
+           },
+           {
+               "label": "Vendor"
+           },
+           {
+               "label": "Batch number"
+           }
+       ],
+       "name": "Material sample"
+}

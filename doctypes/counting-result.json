@@ -1,0 +1,12 @@
+{
+  "name" : "Counting result",
+  "title" : "",
+  "fields" : [
+           {
+               "label": "Date"
+           },
+           {
+               "label": "Detector"
+           }
+       ]
+}

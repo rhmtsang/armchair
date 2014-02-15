@@ -13,14 +13,16 @@
           <h3>{{ title }}</h3>
         </div>
       </div>
+      {{#fields}}
+        <div class="row">
+          <div class="col-sm-12">
+            {{label}}: {{value}}
+          </div>
+        </div>
+      {{/fields}}
       <div class="row">
         <div class="col-sm-12">
-          <span class="date">{{ date }}</span>
-          <div>{{{ mass }}}</div>
-          <div>{{{ vendor }}}</div>
-          <div>{{{ batch_number }}}</div>
-          <div class="body">{{{ html }}}</div>
-          <small><div id="tags"></div></small>
+          Tags: {{tags}}
         </div>
       </div>
       {{>footer}}

@@ -17,17 +17,20 @@ function(doc, req) {
     footer : {},
     scripts : {},
     pageTitle : doc ? "Edit: "+doc.title : "Create a new post",
-    assets : path.asset()
+    assets : path.asset(),
+    fields : []
   };
   
   if (doc) {
     data.doc = JSON.stringify(doc);
-    data.title = doc.title;
     data._rev = doc._rev;
-    data.mass = doc.mass;
-    data.vendor = doc.vendor;
-    data.batch_number = doc.batch_number;
-    data.description = doc.description;
+    data.fields = doc.fields;
+    data.title = doc.title;
+    //data.mass = doc.mass;
+    //data.vendor = doc.vendor;
+    //data.batch_number = doc.batch_number;
+    //data.description = doc.description;
+
     data.tags = doc.tags.join(", ");
     // add data.doc to attachments
     

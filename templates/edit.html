@@ -11,37 +11,47 @@
       <div class="row">
         <!-- form to create a post -->
         <div class="col-sm-9">
+          <h3>{{pageTitle}}</h3>
           <form role="form" id="new-post" action="new.html" method="post">
-            <h3>{{pageTitle}}</h3>
-            <div class="form-group">
-              <label for="title">Sample name</label>
-              <input type="text" size="50" name="title" value="{{title}}">
+            <div class="btn-group">
+              <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                <span id="doctype">Select document type</span> <span class="caret"></span>
+              </button>
+              <ul id="doctype-dropdown" class="dropdown-menu" role="menu"> </ul>
             </div>
-            <div class="form-group">
-              <label for="mass">mass</label>
-              <input size="50" type="text" name="mass" value="{{mass}}">
+            <hr>
+            <div class="row">  
+              <div class="form-group">
+                <div class="col-sm-12">  
+                 <label class="text-right">Title </label>  
+                </div>  
+                <div class="col-sm-12">  
+                  <input type="text" size="50" name="Title" value="">
+                </div> 
+              </div>
             </div>
-            <div class="form-group">
-              <label>vendor</label>
-              <input size="50" type="text" name="vendor" value="{{vendor}}">
-            </div>
-            <div class="form-group">
-              <label>batch number</label>
-              <input size="50" type="text" name="batch_number" value="{{batch_number}}">
-            </div>
+            <div id="form-fields"> </div>
+  <!--
             <div class="form-group">
               <label>Description</label>
-              <textarea name="description" rows="10" cols="80">{{description}}</textarea>
+              <textarea name="description" rows="10" cols="80">description</textarea>
             </div>
-            <div class="form-group">
-              <label for="tags">Click tags to add them. (split by ',')</label>
-              <input size="50" type="text" name="tags" value="{{tags}}">
+-->
+            <div class="row">
+              <div class="form-group">
+                <div class="col-sm-12">
+                  <label for="tags">Click tags to add them. (split by ',')</label>
+                </div>
+                <div class="col-sm-12">
+                  <input size="50" type="text" name="tags" value="{{tags}}">
+                </div>
+              </div>
             </div>
             <div class="row">
               <div class="col-sm-3" id="show-delete"> </div>
               <div class="col-sm-3" id="show-confirm-delete"></div>
               <div class="col-sm-3">
-                <button id="preview" type="button" class="btn btn-default">Preview</button>
+              <!--  <button id="preview" type="button" class="btn btn-default">Preview</button> -->
               </div>
               <div class="col-sm-3">
                 <button type="submit" class="btn btn-primary">Save &rarr;</button> 
@@ -69,7 +79,8 @@
     $.couch.app(function(app) {
       var path = app.require("vendor/couchapp/lib/path").init(app.req);
       var postForm, blog = app.require("lib/blog");
-      
+      var ddoc = this.ddoc;
+
       // extend the tagcloud so that clicks add tags to the current post
       var tagcloud = $.extend(true, {}, this.ddoc.evently.tagcloud, {
         _init : {
@@ -86,18 +97,59 @@
           }
         }
       });
+
+      // Create doctype dropdown menu
+      var dropdownHtml = "";
+      for (var key in this.ddoc.doctypes) {
+        if (this.ddoc.doctypes.hasOwnProperty(key)) {
+          //dropdownHtml += '<li><a href="#" id="doctype-'+ key.replace(/ /g,'')+ '">'+ key+ '</a></li>';
+          dropdownHtml += '<li><a href="#" id="doctype-'+ key + '">'+ this.ddoc.doctypes[key].name + '</a></li>';
+        }
+      }
+      $("#doctype-dropdown").html(dropdownHtml);
+      
+      // onClick response for dropdown menu buttons
+      for (var key in this.ddoc.doctypes) {
+        if (this.ddoc.doctypes.hasOwnProperty(key)) {
+          $('#doctype-'+key).click(function(){
+            thiskey = this.id.replace('doctype-','');
+            $("#doctype").html(ddoc.doctypes[thiskey].name);
+            // Generate form
+            var fieldsHtml = '';
+            var fields = ddoc.doctypes[thiskey].fields;
+            for(var i = 0; i < fields.length; i++){
+              fieldsHtml += '<div class="row">' + 
+                              '<div class="form-group">'+
+                                '<div class="col-sm-12">' + 
+                                 '<label class="text-right">' + fields[i].label + '</label>' + 
+                                '</div>' + 
+                                '<div class="col-sm-12">' + 
+                                  '<input type="text" size="50" name="'+fields[i].label+'" value="'+'">'+
+                                '</div>' +
+                              '</div>'+
+                            '</div>';
+            }
+            $('#form-fields').html(fieldsHtml);
+          })
+        }
+      }
+
       $("#tagcloud").evently(tagcloud, this);
       var postDoc = {{{doc}}};
       var prevRev = JSON.stringify(postDoc);
 
-      $('label[for=body]').append(' <em>with '+(postDoc.format||'html')+'</em>');
+      // Save document onSubmit
+      //$('label[for=body]').append(' <em>with '+(postDoc.format||'html')+'</em>');
       $("form#new-post").submit(function() {
+        var key =  blog.slugifyString($("#doctype").text()).toLowerCase();
         postDoc.author = $$("#account").userCtx.name;
-        postDoc.title = $("input[name=title]").val();
-        postDoc.vendor = $("input[name=vendor]").val();
-        postDoc.mass = $("input[name=mass]").val();
-        postDoc.batch_number = $("input[name=batch_number]").val();
-        postDoc.description = $("textarea[name=description]").val();
+        postDoc.doctype = key;
+        postDoc.fields = ddoc.doctypes[key].fields;
+        postDoc.title = $("input[name=Title]").val();
+        for(var i = 0; i < postDoc.fields.length; i++){
+          postDoc.fields[i].value = $('input[name="'+postDoc.fields[i].label+'"]').val();
+        }
+//        postDoc.description = $("textarea[name=description]").val();
         var dtags = [], tags = $("input[name=tags]").val().split(",");
         for(var i in tags) {
           dtags.push($.trim(tags[i]));
@@ -122,9 +174,18 @@
         return false;
       });
 
+      // If document already exists, i.e. it's now being edited
       if (postDoc._id) {
+
+        // Fill in the form with existing data
+        $('#doctype-'+postDoc.doctype).click();
+        $('input[name=Title]').val(postDoc.title);
+        for(var i = 0; i < postDoc.fields.length; i++){
+          $('input[name="'+postDoc.fields[i].label+'"]').val(postDoc.fields[i].value);
+        }
+
+        // Delete and confirm delete 
         $('#show-delete').html(' <button class="btn btn-default" type="button" id="delete"> Delete Post </button> ');
-        //$('#preview').before(' <button class="btn btn-default" type="button" id="delete"> Delete Post </button> ');
         $("#delete").click(function() {
           var html = ' <button type="button" id="confirm-delete" class="btn btn-danger">Confirm Delete</button> '; 
           $('#show-confirm-delete').html(html);
@@ -142,12 +203,14 @@
         });
       }
 
+      /*// Preview
       $("#preview").click(function() {
         var markdown = app.require("vendor/couchapp/lib/markdown");
         var html = markdown.encode($("textarea[name=description]").val());
         $('#show-preview').html(html);
         $('description').scrollTo('#show-preview', {duration: 500});
-      });
+      }); //*/
+
     });
   </script>
 </html>

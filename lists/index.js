@@ -63,7 +63,7 @@ function(head, req) {
     return Mustache.to_html(ddoc.templates.index, stash, ddoc.templates.partials, List.send);
   });
 
-  // if the client requests an atom feed and not html, 
+/*  // if the client requests an atom feed and not html, 
   // we run this function to generate the feed.
   provides("atom", function() {    
     var path = require("vendor/couchapp/lib/path").init(req);
@@ -110,5 +110,5 @@ function(head, req) {
 
     // close the loop after all rows are rendered
     return "</feed>";
-  });
-};
+  }); //*/
+}; 
