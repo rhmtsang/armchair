@@ -13,15 +13,23 @@ function(head, req) {
   // The provides function serves the format the client requests.
   // The first matching format is sent, so reordering functions changes 
   // thier priority. In this case HTML is the preferred format, so it comes first.
+
   provides("html", function() {
     var key = "";
     // render the html head using a template
-    var stash = {
+    var stash = {	
       header : {
         index : indexPath,
         blogName : ddoc.elog.title,
         feedPath : feedPath,
-        commentsFeed : commentsFeed
+        commentsFeed : commentsFeed,
+        doctypes : Object.keys(ddoc.doctypes),
+        doctype_name : function(){
+          return ddoc.doctypes[this].name;
+        },
+        doctype_link : function(){
+          return path.list('index','doctypes', {key : this});
+        }
       },
       footer : {},
       scripts : {},
@@ -33,6 +41,7 @@ function(head, req) {
       posts : List.withRows(function(row) {
         var post = row.value;
         key = row.key;
+        log("XXX:"+row.id);
         return {
           title : post.title,
           author : post.author,
@@ -62,53 +71,4 @@ function(head, req) {
     };
     return Mustache.to_html(ddoc.templates.index, stash, ddoc.templates.partials, List.send);
   });
-
-/*  // if the client requests an atom feed and not html, 
-  // we run this function to generate the feed.
-  provides("atom", function() {    
-    var path = require("vendor/couchapp/lib/path").init(req);
-    var markdown = require("vendor/couchapp/lib/markdown");
-    var textile = require("vendor/textile/textile");
-
-    // we load the first row to find the most recent change date
-    var row = getRow();
-    
-    // generate the feed header
-    var feedHeader = Atom.header({
-      updated : (row ? new Date(row.value.created_at) : new Date()),
-      title : ddoc.elog.title,
-      feed_id : path.absolute(indexPath),
-      feed_link : path.absolute(feedPath),
-    });
-    
-    // send the header to the client
-    send(feedHeader);
-
-    // loop over all rows
-    if (row) {
-      do {
-        if (row.value.format == "markdown") {
-          var html = markdown.encode(row.value.body);
-        //} else if (row.value.format == "textile") {
-        //  var html = textile.encode(row.value.body);
-        //} else {
-        //  var html = Mustache.escape(row.value.html);
-        }
-        // generate the entry for this row
-        var feedEntry = Atom.entry({
-          entry_id : path.absolute('/'+encodeURIComponent(req.info.db_name)+'/'+encodeURIComponent(row.id)),
-          title : row.value.title,
-          content : html,
-          updated : new Date(row.value.created_at),
-          author : row.value.author,
-          alternate : path.absolute(path.show('post', row.id))
-        });
-        // send the entry to client
-        send(feedEntry);
-      } while (row = getRow());
-    }
-
-    // close the loop after all rows are rendered
-    return "</feed>";
-  }); //*/
 }; 

@@ -1,11 +1,18 @@
+{{#header}}
 <div class="row">
-  <div class="col-xs-8"><h3><a href="{{ index }}"><strong>{{ blogName }}</strong></a></h3></div>
+  <div class="col-xs-8"><h3><a href="{{ index }}"><strong>{{blogName}}</strong></a></h3></div>
   <div id="account" class="col-xs-4 pull-right"></div>
 </div>
 <div class="row">
   <div class="col-md-12">
     <div id="links"> 
-      <a href="{{index}}">Home</a> | Material Samples | Counting Results | Monte Carlo | Background Calculation | Search 
+      <a href="{{index}}">Home</a> 
+        {{#doctypes}}
+          | <a href="{{doctype_link}}"> {{doctype_name}} </a> 
+        {{/doctypes}}
+        <!--Material Samples | Counting Results | Monte Carlo  -->
+        | Background Calculation | Search 
     </div>
   </div>
 </div>
+{{/header}}

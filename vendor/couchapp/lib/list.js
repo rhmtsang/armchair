@@ -1,8 +1,12 @@
 // Helpers for writing server-side _list functions in CouchDB
 exports.withRows = function(fun) {
  var f = function() {
-    var row = getRow();
-    return row && fun(row);
+    var result = [];
+    var row;
+    while(row = getRow()){
+      result.push(fun(row));
+    }
+    return result;
   };
   f.iterator = true;
   return f;

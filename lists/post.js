@@ -29,11 +29,10 @@ function(head, req) {
       var stash = {
         header : {
           index : indexPath,
-          blogName : ddoc.elog.title,   //canont access with {{header.blogName}}. don't know why.
+          blogName : ddoc.elog.title,  
           feedPath : feedPath,
           commentsFeed : commentsFeed
         },
-        blogName : ddoc.elog.title,
         footer : {},
         scripts : {},
         post_id : post._id,
