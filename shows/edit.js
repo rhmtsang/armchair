@@ -12,7 +12,18 @@ function(doc, req) {
       index : indexPath,
       blogName : ddoc.elog.title,
       feedPath : feedPath,
-      commentsFeed : commentsFeed
+      commentsFeed : commentsFeed,
+      index : indexPath,
+      blogName : ddoc.elog.title,
+      feedPath : feedPath,
+      commentsFeed : commentsFeed,
+      doctypes : Object.keys(ddoc.doctypes),
+      doctype_name : function(){
+        return ddoc.doctypes[this].name;
+      },  
+      doctype_link : function(){
+        return path.list('index','doctypes', {key : this});
+      } 
     },
     footer : {},
     scripts : {},

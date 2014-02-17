@@ -144,6 +144,7 @@
       $("form#new-post").submit(function() {
         var key =  blog.slugifyString($("#doctype").text()).toLowerCase();
         postDoc.author = $$("#account").userCtx.name;
+        postDoc.last_edited_by = postDoc.author;
         postDoc.doctype = key;
         postDoc.fields = ddoc.doctypes[key].fields;
         postDoc.title = $("input[name=Title]").val();
@@ -162,8 +163,10 @@
         if (!postDoc._id) {
           postDoc._id = blog.slugifyString(postDoc.title);
         }else{
+          postDoc.last_edited_by = $$("#account").userCtx.name;
+          postDoc.last_edited_at = new Date();
           postDoc._attachments = postDoc._attachments || {};
-          var attname = "rev-"+postDoc._rev.split("-")[0];
+          var attname = "#rev-"+postDoc._rev.split("-")[0];
           postDoc._attachments[attname] = {content_type :"application/json", data : Base64.encode(prevRev)};
         }
         app.db.saveDoc(postDoc, {

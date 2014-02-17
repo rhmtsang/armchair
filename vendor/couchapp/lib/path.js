@@ -76,6 +76,15 @@ exports.init = function(req) {
       var list = req.path[req.path.length - 2];
       return this.list(list, view, query);
     },
+    newer : function(key) {
+      if (!typeof key == "undefined") return null;
+      var query = req.query;
+      query.startkey = key;
+      query.skip=0;
+      var view = req.path[req.path.length - 1];
+      var list = req.path[req.path.length - 2];
+      return this.list(list, view, query);
+    },
     absolute : function(path) {
       return 'http://' + req.headers.Host + path;
     }

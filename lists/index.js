@@ -15,7 +15,8 @@ function(head, req) {
   // thier priority. In this case HTML is the preferred format, so it comes first.
 
   provides("html", function() {
-    var key = "";
+    var key = '';
+    var nentries = 0;
     // render the html head using a template
     var stash = {	
       header : {
@@ -41,11 +42,14 @@ function(head, req) {
       posts : List.withRows(function(row) {
         var post = row.value;
         key = row.key;
-        //log("XXX:"+row.id);
+        nentries += 1;
+        log("XXXXXXXXXXXXXXXXX key:"+key);
+        log("req"+req.query.limit);
         return {
           title : post.title,
           author : post.author,
           date : post.created_at,
+          doctype_name : ddoc.doctypes[post.doctype].name,
           link : path.list('post','post-page', {startkey : [row.id]}),
           has_tags : post.tags ? true : false,
           tags : post.tags && post.tags.map ? post.tags.map(function(tag) {
@@ -62,8 +66,23 @@ function(head, req) {
           }) : []
         };
       }),
-      older : function() {
+      /*page_skip : function(){
+        var result = [];
+        log("this.posts.length:"+this.posts.length);
+        log("nentries:"+nentries);
+        for(var i = 0; i < this.posts.length/req.query.limit; i++){
+          result.push(i*req.query.limit)
+        }
+        log("result:"+result);
+        return result;
+      },*/
+      older : function(nextkey) {
+        log("older key: "+key+","+nextkey);
         return path.older(key);
+      },
+      newer : function(key) {
+        log("newer key");
+        return path.newer(key);
       },
       "5" : path.limit(5),
       "10" : path.limit(10),
