@@ -83,7 +83,7 @@ function docForm(formSelector, opts) {
   }
   
   if (opts.id) {
-    window.alert(' XXX opt.attachPrevRev: '+str(opts.attachPrevRev));
+    //window.alert(' XXX opt.attachPrevRev: '+str(opts.attachPrevRev));
     db.openDoc(opts.id, {
       attachPrevRev : opts.attachPrevRev,
       error: function() {

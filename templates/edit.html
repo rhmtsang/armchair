@@ -81,7 +81,7 @@
       var postForm, blog = app.require("lib/blog");
       var ddoc = this.ddoc;
 
-      // extend the tagcloud so that clicks add tags to the current post
+      // extend the tagcloud so that clicks add tags to the current post ()
       var tagcloud = $.extend(true, {}, this.ddoc.evently.tagcloud, {
         _init : {
           selectors : {
@@ -137,6 +137,7 @@
       $("#tagcloud").evently(tagcloud, this);
       var postDoc = {{{doc}}};
       var prevRev = JSON.stringify(postDoc);
+      console.log("XXX:"+prevRev);
 
       // Save document onSubmit
       //$('label[for=body]').append(' <em>with '+(postDoc.format||'html')+'</em>');
@@ -161,9 +162,9 @@
         if (!postDoc._id) {
           postDoc._id = blog.slugifyString(postDoc.title);
         }else{
-          //postDoc._attachments = postDoc._attachments || {};
-          //var attname = "rev-"+postDoc._rev.split("-")[0];
-          //postDoc._attachments[attname] = {content_type :"application/json", data : Base64.encode(prevRev)};
+          postDoc._attachments = postDoc._attachments || {};
+          var attname = "rev-"+postDoc._rev.split("-")[0];
+          postDoc._attachments[attname] = {content_type :"application/json", data : Base64.encode(prevRev)};
         }
         app.db.saveDoc(postDoc, {
           success : function(resp) {
@@ -176,7 +177,7 @@
 
       // If document already exists, i.e. it's now being edited
       if (postDoc._id) {
-
+        console.log('document already exists'); 
         // Fill in the form with existing data
         $('#doctype-'+postDoc.doctype).click();
         $('input[name=Title]').val(postDoc.title);

@@ -41,7 +41,7 @@ function(head, req) {
       posts : List.withRows(function(row) {
         var post = row.value;
         key = row.key;
-        log("XXX:"+row.id);
+        //log("XXX:"+row.id);
         return {
           title : post.title,
           author : post.author,
