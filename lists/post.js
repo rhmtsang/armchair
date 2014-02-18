@@ -41,7 +41,11 @@ function(head, req) {
             return ddoc.doctypes[this].name;
           },  
           doctype_link : function(){
-            return path.list('index','doctypes', {key : this});
+            return path.list('index','doctypes', { startkey : [this,{}], 
+                                                 endkey : [this],
+                                                 limit : 10, 
+                                                 descending : true, 
+                                                 reduce : false});
           } 
         },
         footer : {},

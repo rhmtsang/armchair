@@ -3,10 +3,16 @@
   "title" : "",
   "fields" : [
            {
-               "label": "Date"
+               "label": "Date",
+               "type" : ["date"]
            },
            {
-               "label": "Detector"
+               "label": "Sample",
+               "type" : ["document","material-sample"]
+           },
+           {
+               "label": "Detector",
+               "type" : ["text"]
            }
        ]
 }

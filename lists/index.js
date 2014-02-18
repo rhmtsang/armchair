@@ -16,7 +16,6 @@ function(head, req) {
 
   provides("html", function() {
     var key = '';
-    var nentries = 0;
     // render the html head using a template
     var stash = {	
       header : {
@@ -29,7 +28,11 @@ function(head, req) {
           return ddoc.doctypes[this].name;
         },
         doctype_link : function(){
-          return path.list('index','doctypes', {key : this});
+          return path.list('index','doctypes', { startkey : [this,{}], 
+                                                 endkey : [this],
+                                                 limit : 10,
+                                                 descending : true, 
+                                                 reduce : false});
         }
       },
       footer : {},
@@ -42,8 +45,7 @@ function(head, req) {
       posts : List.withRows(function(row) {
         var post = row.value;
         key = row.key;
-        nentries += 1;
-        log("XXXXXXXXXXXXXXXXX key:"+key);
+        log("XXXXXXXXXXXXXXXX key:"+key);
         log("req"+req.query.limit);
         return {
           title : post.title,
@@ -69,7 +71,6 @@ function(head, req) {
       /*page_skip : function(){
         var result = [];
         log("this.posts.length:"+this.posts.length);
-        log("nentries:"+nentries);
         for(var i = 0; i < this.posts.length/req.query.limit; i++){
           result.push(i*req.query.limit)
         }

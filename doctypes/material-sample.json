@@ -1,18 +1,31 @@
 {
-  "title" : "",
+       "name": "Material Sample",
+       "title" : "",
        "fields": [
            {
-               "label": "Sample name"
+               "label": "Sample name",
+               "type" : ["text"]
            },
            {
-               "label": "Mass"
+               "label": "Status",
+               "type" : ["checkbox"],
+               "options" : ["Option 1", "Option 2", "Option 3"]
            },
            {
-               "label": "Vendor"
+               "label": "Mass",
+               "type" : ["text"]
            },
            {
-               "label": "Batch number"
+               "label": "Vendor",
+               "type" : ["text"]
+           },
+           {
+               "label": "Batch number",
+               "type" : ["text"]
+           },
+           {
+               "label": "Description",
+               "type" : ["textarea"]
            }
-       ],
-       "name": "Material Sample"
+       ]
 }

@@ -1,3 +1,3 @@
 function(doc) {
-  emit(doc.doctype,doc);
+  emit([doc.doctype, doc.created_at],doc);
 }
