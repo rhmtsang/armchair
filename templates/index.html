@@ -29,12 +29,19 @@
                 {{ doctype_name }}
               </td>
               <td>
-                <a href="{{ link }}"><strong>{{ title }}</strong><br></a>
+                  <a href="{{ link }}"><strong>
+                {{#title}}{{ title }}{{/title}}
+                {{^title}}<em>[untitled]</em>{{/title}}
+                  </strong><br></a>
                 {{#has_tags}}
                   {{#tags}}
                     <a href="{{link}}"><button type="button" class="btn btn-default btn-xs"><small>{{tag}}</small></button></a>
                   {{/tags}}
                 {{/has_tags}}
+                {{^has_tags}}
+                   <i>[no tags defined]</i>
+                {{/has_tags}}
+    
               </td>
               <td>
                 {{author}} 

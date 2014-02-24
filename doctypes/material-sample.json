@@ -1,31 +1,27 @@
 {
-       "name": "Material Sample",
-       "title" : "",
-       "fields": [
-           {
-               "label": "Sample name",
-               "type" : ["text"]
-           },
-           {
-               "label": "Status",
-               "type" : ["checkbox"],
-               "options" : ["Option 1", "Option 2", "Option 3"]
-           },
-           {
-               "label": "Mass",
-               "type" : ["text"]
-           },
-           {
-               "label": "Vendor",
-               "type" : ["text"]
-           },
-           {
-               "label": "Batch number",
-               "type" : ["text"]
-           },
-           {
-               "label": "Description",
-               "type" : ["textarea"]
-           }
-       ]
+  "name" : "Material Sample",
+  "title" : "",
+  "fields" : [
+    { "label": "Material", "type" : ["text"] },
+    { "label": "Supplier", "type" : ["text"] },
+    { "label": "Intended use", "type" : ["text"] },
+    { "label": "Lot number", "type" : ["text"] },
+    { "label": "Part number", "type" : ["text"] },
+
+    { "label": "Mass", "type" : ["text"] },
+    { "label": "Volume", "type" : ["text"] },
+    { "label": "Surface area", "type" : ["text"] },
+   
+    { "label": "Dimensions", "type" : ["subform"], "fields" : [ 
+      { "label": "Shape", "type" : ["radio"], "options" : ["Cube", "Cylinder", "Sphere","Bottle","Other"] }, 
+      { "label": "Width", "type" : ["text"] },
+      { "label": "Length", "type" : ["text"] },
+      { "label": "Height", "type" : ["text"] },
+      { "label": "Diameter", "type" : ["text"] }],
+      "values" : {}
+    },
+
+    { "label": "Remarks", "type" : ["textarea"] }
+  ],
+  "values" : {}
 }

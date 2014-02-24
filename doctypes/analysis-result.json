@@ -1,0 +1,9 @@
+{
+  "name" : "Analysis Result",
+  "title" : "",
+  "fields" : [
+    { "label": "Counting", "type" : ["document","counting-result"] }, 
+    { "label": "Analyzed by (whom)", "type" : ["text"] }
+  ],
+  "values" : {}
+}

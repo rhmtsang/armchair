@@ -18,6 +18,14 @@
           </div>
         </div>
       {{/fields}}
+      Attachments:
+      {{#attachments}}
+      <div class="row">
+        <div class="col-sm-12">
+           <a href="../../../../{{post_id}}/{{.}}"> {{.}} </a>
+        </div>
+      </div>
+      {{/attachments}}
       <div class="row">
         <div class="col-sm-12">
           Tags: {{tags}}

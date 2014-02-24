@@ -25,6 +25,12 @@ function(head, req) {
         var html = Mustache.escape(post.html);
       } */
       var html = Mustache.escape(post.html);
+      var attachments = [];
+      for(var att in post._attachments){
+        if(post._attachments.hasOwnProperty(att) && att[0] != '#'){
+          attachments.push(att);
+        }
+      }
 
       var stash = {
         header : {
@@ -56,6 +62,7 @@ function(head, req) {
         fields : post.fields,
         tags : post.tags.join(', '),
         has_tags : post.tags ? true : false,       
+        attachments : attachments,
         html : html/*,
         comments : List.withRows(function(row) {
           var v = row.value;

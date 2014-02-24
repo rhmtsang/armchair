@@ -2,17 +2,16 @@
   "name" : "Counting Result",
   "title" : "",
   "fields" : [
-           {
-               "label": "Date",
-               "type" : ["date"]
-           },
-           {
-               "label": "Sample",
-               "type" : ["document","material-sample"]
-           },
-           {
-               "label": "Detector",
-               "type" : ["text"]
-           }
-       ]
+    { "label": "Sample", "type" : ["document","material-sample"] },
+
+    { "label": "Date of measurement", "type" : ["date"] }, 
+    { "label": "Detector", "type" : ["text"] },
+    { "label": "Measured by (whom)", "type" : ["text"] },
+    { "label": "Livetime", "type" : ["text"] },
+
+    { "label": "Mass", "type" : ["text"] },
+    { "label": "Volume", "type" : ["text"] },
+    { "label": "Surface area", "type" : ["text"] }
+  ],
+  "values" : {}
 }

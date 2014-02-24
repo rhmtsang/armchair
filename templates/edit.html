@@ -9,7 +9,7 @@
       <div class="row">
         <!-- form to create a post -->
         <div class="col-sm-9">
-          <h3>{{pageTitle}}</h3>
+          <h3 id="pageTitle">{{pageTitle}}</h3>
           <form role="form" id="new-post" action="new.html" method="post">
             <div class="btn-group">
               <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
@@ -25,6 +25,8 @@
                 </div>  
                 <div class="col-sm-12 ui-widget">  
                   <input type="text" size="50" id="Title" name="Title" value="">
+                  <input type="hidden" size="50" id="_id" name="_id" value="">
+                  <input type="hidden" size="50" id="_rev" name="_rev" value="">
                 </div> 
               </div>
             </div>
@@ -36,6 +38,14 @@
                 </div>
                 <div class="col-sm-12">
                   <input size="50" type="text" name="tags" value="{{tags}}">
+                </div>
+              </div>
+              <div class="form-group">
+                <div class="col-sm-12">
+                  <label for="_attachments">Attach files:</label>
+                </div>
+                <div class="col-sm-12">
+                  <input type="file" name="_attachments" id="_attachments" multiple="multiple" /><br>
                 </div>
               </div>
             </div>
@@ -52,6 +62,7 @@
             </div>
           </form>
           <!-- <a target="_new" href="http://warpedvisions.org/projects/markdown-cheat-sheet/">Markdown help</a>  -->
+          <!-- <form action="/file-upload" class="dropzone" id="my-awesome-dropzone"></form> -->
         </div> 
         <div class="col-sm-3">
           <div id="tagcloud"></div>
@@ -73,7 +84,7 @@
       var postForm, blog = app.require("lib/blog");
       var ddoc = this.ddoc;
 
-      // extend the tagcloud so that clicks add tags to the current post ()
+      // Extend the tagcloud so that clicks add tags to the current post ()
       var tagcloud = $.extend(true, {}, this.ddoc.evently.tagcloud, {
         _init : {
           selectors : {
@@ -89,6 +100,7 @@
           }
         }
       });
+      $("#tagcloud").evently(tagcloud, this);
 
       // Create doctype dropdown menu
       var dropdownHtml = "";
@@ -100,122 +112,163 @@
       }
       $("#doctype-dropdown").html(dropdownHtml);
       
-      // onClick response for doctype dropdown menu buttons
+      // Function for generating one field in the form
+      function generateFieldHtml(field){
+        html = '';
+
+        // Skip the field if field type is not defined
+        if(!field.type[0]){
+          return html;
+        }
+        html += '<div class="row">' + 
+                        '<div class="form-group">'+
+                          '<div class="col-sm-12"> <label class="text-right">' + field.label + '</label> </div>' + 
+                          '<div class="col-sm-12">';
+
+        // Text and date
+        if(field.type[0] == "text" || field.type[0] == "date"){
+          html +='<input type="'+ field.type[0] +'" size="50" name="'+field.label+'" value="'+'"></div></div></div>';
+
+        // Document
+        }else if(field.type[0] == "document"){
+          html +='<input type="'+ field.type[0] +'" size="50" name="'+field.label+'" value="'+'">'+
+                                   '<div name="'+ field.label +'-button"></div></div></div></div>';
+
+          // Enable auto complete
+          app.db.query(function(doc){ 
+                          //log('type:'+field.type[1])
+                            emit(doc.doctype,doc.title);
+                        }, null, "javascript",{   
+                          label : field.label,
+                          startkey : field.type[1],
+                          endkey : field.type[1],
+                          success : function(data){
+                            //console.log(JSON.stringify(data));
+                            var autocompleteList = [];
+                            for(var j = 0; j < data.total_rows-data.offset; j++){
+                              autocompleteList.push({label: data.rows[j].value, value: data.rows[j].id});
+                            }
+                            //console.log(JSON.stringify(autocompleteList));
+                            //console.log('f='+fields);
+                            //console.log('i='+i);
+                            //$('input[name="'+field.label+'"]').autocomplete({ 
+                            $('input[name="'+this.label+'"]').autocomplete({ 
+                              source: autocompleteList,
+                              messages: {
+                                          noResults: '',
+                                          results: function() {}
+                                        }
+                            });
+                          }
+                        });
+
+        // Textarea
+        }else if(field.type[0] == "textarea"){
+          html +='<textarea name="' + field.label + '" rows="10" cols="80"></textarea>';
+
+        // Checkbox and radio
+        }else if(field.type[0] == "checkbox" || field.type[0] == "radio"){
+          //fieldsHtml += '<div class="btn-group" data-toggle="buttons">';  //cannot set to active programmatically
+          fieldHtml = '';
+            for(var j = 0; j < field.options.length; j++){
+              fieldHtml +='<label class="btn btn-default">';
+              if(field.type[0] == "radio"){
+                fieldHtml +='<input type="'+ field.type[0] +'" name="'+field.label+'" id="'+field.label+'-'+field.options[j]+'" value="'+j+'"> '+
+                                          field.options[j];
+                //console.log( '<input type="'+ field.type[0] +'" name="'+field.label+'" id="'+field.label+'-'+field.options[j]+'" value="'+j+'"> ');
+              }else if(field.type[0] == "checkbox"){
+                fieldHtml +='<input type="'+ field.type[0] +'" name="'+field.label+'-'+field.options[j]+'"> '+ field.options[j];
+              }
+              fieldHtml +='</label>';
+            };
+            //fieldsHtml += '</div></div></div></div>';
+            fieldHtml +='</div></div></div>';
+            html +=fieldHtml;
+        }else if(field.type[0] == "subform"){
+          fields = field.fields;
+          for(var i = 0; i < fields.length; i++){
+            html += generateFieldHtml(fields[i]);
+          }
+        }
+        return html;
+      } // end function: generate field html
+
+      // Generate form when doctype dropdown menu buttons are clicked 
       for (var key in this.ddoc.doctypes) {
         if (this.ddoc.doctypes.hasOwnProperty(key)) {
           $('#doctype-'+key).click(function(){
             thiskey = this.id.replace('doctype-','');
             $("#doctype").html(ddoc.doctypes[thiskey].name);
+
             // Generate form
-            var fieldsHtml = '';
+            $('#form-fields').html('');
             var fields = ddoc.doctypes[thiskey].fields;
             for(var i = 0; i < fields.length; i++){
-              // Skip the field if field type is not defined
-              if(!fields[i].type[0]){
-                continue;
-              }
-              fieldsHtml += '<div class="row">' + 
-                              '<div class="form-group">'+
-                                '<div class="col-sm-12"> <label class="text-right">' + fields[i].label + '</label> </div>' + 
-                                '<div class="col-sm-12">';
-
-              // Text and date
-              if(fields[i].type[0] == "text" || fields[i].type[0] == "date" || fields[i].type[0] == "document"){
-                fieldsHtml += '<input type="'+ fields[i].type[0] +'" size="50" name="'+fields[i].label+'" value="'+'"></div></div></div>';
-
-              // Textarea
-              }else if(fields[i].type[0] == "textarea"){
-                fieldsHtml += '<textarea name="' + fields[i].label + '" rows="10" cols="80"></textarea>';
-
-              // Checkbox and radio
-              }else if(fields[i].type[0] == "checkbox" || fields[i].type[0] == "radio"){
-                //fieldsHtml += '<div class="btn-group" data-toggle="buttons">';  //cannot set to active programmatically
-                  for(var j = 0; j < fields[i].options.length; j++){
-                    fieldsHtml += '<label class="btn btn-default">';
-                    if(fields[i].type[0] == "radio"){
-                      fieldsHtml += '<input type="'+ fields[i].type[0] +'" name="'+fields[i].label+'" id="'+fields[i].label+'-'+fields[i].options[j]+'" value="'+j+'"> '+ fields[i].options[j];
-                      console.log( '<input type="'+ fields[i].type[0] +'" name="'+fields[i].label+'" id="'+fields[i].label+'-'+fields[i].options[j]+'" value="'+j+'"> ');
-                    }else if(fields[i].type[0] == "checkbox"){
-                      fieldsHtml += '<input type="'+ fields[i].type[0] +'" name="'+fields[i].label+'-'+fields[i].options[j]+'"> '+ fields[i].options[j];
-                    }
-                    fieldsHtml += '</label>';
-                  };
-                  //fieldsHtml += '</div></div></div></div>';
-                  fieldsHtml += '</div></div></div>';
-              }
+              $('#form-fields').append(generateFieldHtml(fields[i]));
             }
  
             // Put form onto page
-            $('#form-fields').html(fieldsHtml);
+            //$('#form-fields').html(fieldsHtml);
 
-            // Enable auto complete (hard coded field label)
-            var samples;
-            app.db.query(function(doc){ 
-                            if(doc.doctype == "material-sample"){
-                              emit(doc.title,doc._id);
-                            }
-                          }, null, "javascript",{   
-                            success : function(data){
-                              var samples= [];
-                              for(var i = 0; i < data.total_rows; i++){
-                                samples.push({label: data.rows[i].key, value: data.rows[i].value});
-                              }
-                              $("input[name=Sample]").autocomplete({ 
-                                source: samples,
-                                messages: {
-                                            noResults: '',
-                                            results: function() {}
-                                          }
-                              });
-                              console.log(JSON.stringify(data));
-                              console.log(JSON.stringify(samples));
-                            }
-                          });
           })
         }
       }
 
-      $("#tagcloud").evently(tagcloud, this);
       var postDoc = {{{doc}}};
       var prevRev = JSON.stringify(postDoc);
-      console.log("XXX:"+prevRev);
 
-      // Save document onSubmit
+      // Save document on Submit
       //$('label[for=body]').append(' <em>with '+(postDoc.format||'html')+'</em>');
-      $("form#new-post").submit(function() {
+      $("form#new-post").submit(function(e) {
+
+        // Prevent submit because we will use ajaxSubmit()
+        e.preventDefault();
+
+        // Transfer data from a field in the form to doc object
+        function readField(field){
+          if(field.type[0] == 'radio'){
+            for(var j = 0; j < field.options.length; j++){
+              field.value = $('input[id="'+field.label+'-'+field.options[j]+'"]:checked').val() ? j : field.value;
+            }
+          }else if (field.type[0] == 'checkbox'){
+            field.value = [];
+            for(var j = 0; j < field.options.length; j++){
+              field.value.push($('input[name="'+field.label+'-'+field.options[j]+'"]:checked').val() ? true : false);
+            }
+          }else if (field.type[0] == 'textarea'){
+            field.value = $('textarea[name="'+ field.label +'"]').val();
+          }else if (field.type[0] == 'subform'){
+            for(var i = 0; i < field.fields.length; i++){
+              readField(field.fields[i]);
+            }
+          }else{
+            field.value = $('input[name="'+field.label+'"]').val();
+          }
+        }
+
+        // Transfer data from form to doc object
         var key =  blog.slugifyString($("#doctype").text()).toLowerCase();
         postDoc.author = $$("#account").userCtx.name;
         postDoc.last_edited_by = postDoc.author;
         postDoc.doctype = key;
-        postDoc.fields = ddoc.doctypes[key].fields;
         postDoc.title = $("input[name=Title]").val();
+
+        postDoc.fields = ddoc.doctypes[key].fields;
         for(var i = 0; i < postDoc.fields.length; i++){
-          if(postDoc.fields[i].type == 'radio'){
-            for(var j = 0; j < postDoc.fields[i].options.length; j++){
-              postDoc.fields[i].value = $('input[id="'+postDoc.fields[i].label+'-'+postDoc.fields[i].options[j]+'"]:checked').val() ? j : postDoc.fields[i].value;
-            }
-          }else if (postDoc.fields[i].type == 'checkbox'){
-            postDoc.fields[i].value = [];
-            for(var j = 0; j < postDoc.fields[i].options.length; j++){
-              postDoc.fields[i].value.push($('input[name="'+postDoc.fields[i].label+'-'+postDoc.fields[i].options[j]+'"]:checked').val() ? true : false);
-            }
-          }else if (postDoc.fields[i].type == 'textarea'){
-            postDoc.fields[i].value = $('textarea[name="'+ postDoc.fields[i].label +'"]').val();
-          }else{
-            postDoc.fields[i].value = $('input[name="'+postDoc.fields[i].label+'"]').val();
-          }
-          //console.log(''+postDoc.fields[i].label+':'+postDoc.fields[i].value);
+          readField(postDoc.fields[i])
         }
+
         var dtags = [], tags = $("input[name=tags]").val().split(",");
         for(var i in tags) {
-          dtags.push($.trim(tags[i]));
+          if(tags[i]) dtags.push($.trim(tags[i]));
         }
         postDoc.tags = dtags;
         if (!postDoc.created_at) {
           postDoc.created_at = new Date();
         }
         if (!postDoc._id) {
-          postDoc._id = blog.slugifyString(postDoc.title);
+          // Custom doc id goes here
+          //postDoc._id = blog.slugifyString(postDoc.title);
         }else{
           postDoc.last_edited_by = $$("#account").userCtx.name;
           postDoc.last_edited_at = new Date();
@@ -223,41 +276,60 @@
           var attname = "#rev-"+postDoc._rev.split("-")[0];
           postDoc._attachments[attname] = {content_type :"application/json", data : Base64.encode(prevRev)};
         }
+        //console.log(postDoc);
+
+        // Save doc to couchdb
         app.db.saveDoc(postDoc, {
           success : function(resp) {
+            //alert(""+JSON.stringify(resp));
             $("#saved").text("Saved _rev: "+resp.rev).fadeIn(500).fadeOut(6000);
-            $('h1').html('Editing <a href="'+path.show('post',resp.id)+'">'+resp.id+'</a> by '+postDoc.author);
+            $('#pageTitle').html('Editing <a href="'+path.show('post',resp.id)+'">'+resp.id+'</a> by '+postDoc.author);
+            //console.log(JSON.stringify($('#_attachments').val()));
+            // $('input#_attachments').files
+            if($('input#_attachments').val().length > 0){
+              $('#_id').val(resp.id);
+              $('#_rev').val(resp.rev);
+              $('form#new-post').ajaxSubmit({
+                // Submit the form with the attachment
+                url: '/' + app.db.name + '/' + resp.id,
+                success: function(response) {
+                  //alert("Your attachment was submitted.")
+                }
+              })
+            }
           }
         });
+
         return false;
       });
 
       // If document already exists, i.e. it's now being edited
       if (postDoc._id) {
-        console.log('document already exists'); 
+
+        // Fill in one field with existing data in db
+        function fillField(field){
+          if(field.type == 'radio'){
+            $('input[id="'+ field.label +'-'+ field.options[field.value] +'"]').prop('checked',true);
+          }else if (field.type == 'checkbox'){
+            for(var j = 0; j < field.options.length; j++){
+              $('input[name="'+field.label+'-'+field.options[j]+'"]').prop('checked',field.value[j]);
+            }
+          }else if (field.type == 'textarea'){
+            $('textarea[name="'+ field.label +'"]').val(field.value);
+          }else if (field.type == 'subform'){
+            for(var i = 0; i < field.fields.length; i++){
+              fillField(field.fields[i]);
+            }
+          }else{
+            $('input[name="'+field.label+'"]').val(field.value);
+          }
+        }
+
         // Fill in the form with existing data
         $('#doctype-'+postDoc.doctype).click();
         $('input[name=Title]').val(postDoc.title);
         for(var i = 0; i < postDoc.fields.length; i++){
-          if(postDoc.fields[i].type == 'radio'){
-            //console.log('value:'+postDoc.fields[i].value);
-            //console.log('input[id="'+ postDoc.fields[i].label +'-'+ postDoc.fields[i].options[postDoc.fields[i].value] +'"]');
-            $('input[id="'+ postDoc.fields[i].label +'-'+ postDoc.fields[i].options[postDoc.fields[i].value] +'"]').prop('checked',true);
-            //$('input[id="'+ postDoc.fields[i].label +'-'+ postDoc.fields[i].options[postDoc.fields[i].value] +'"]').addClass("active");
-          }else if (postDoc.fields[i].type == 'checkbox'){
-            //postDoc.fields[i].value = [];
-            for(var j = 0; j < postDoc.fields[i].options.length; j++){
-              $('input[name="'+postDoc.fields[i].label+'-'+postDoc.fields[i].options[j]+'"]').prop('checked',postDoc.fields[i].value[j]);
-            }
-          }else if (postDoc.fields[i].type == 'textarea'){
-            $('textarea[name="'+ postDoc.fields[i].label +'"]').val(postDoc.fields[i].value);
-          }else{
-            $('input[name="'+postDoc.fields[i].label+'"]').val(postDoc.fields[i].value);
-            //postDoc.fields[i].value = $('input[name="'+postDoc.fields[i].label+'"]').val();
-          }
-
-
-
+          fillField(postDoc.fields[i]);
         }
 
         // Delete and confirm delete 
@@ -265,11 +337,10 @@
         $("#delete").click(function() {
           var html = ' <button type="button" id="confirm-delete" class="btn btn-danger">Confirm Delete</button> '; 
           $('#show-confirm-delete').html(html);
-          //$('#delete').after(html);
             $("#confirm-delete").click(function() {
               app.db.removeDoc(postDoc, {
                 success : function(resp) {
-                  $("h1").text("Deleted "+resp.id);
+                  $("#pageTitle").text("Deleted "+resp.id);
                   $('form#new-post input').attr('disabled', true);
                 }
               });
@@ -278,8 +349,6 @@
           return false;
         });
       }
-
-      //alert($('input[name=gender]:checked').val());
 
       /*// Preview
       $("#preview").click(function() {

@@ -45,15 +45,15 @@ function(head, req) {
       posts : List.withRows(function(row) {
         var post = row.value;
         key = row.key;
-        log("XXXXXXXXXXXXXXXX key:"+key);
-        log("req"+req.query.limit);
+        //log("XXXXXXXXXXXXXXXX key:"+key);
+        //log("req"+req.query.limit);
         return {
-          title : post.title,
+          title : post.title,// || "<i> &lt;Untitled&gt; </i>",
           author : post.author,
           date : post.created_at,
           doctype_name : ddoc.doctypes[post.doctype].name,
           link : path.list('post','post-page', {startkey : [row.id]}),
-          has_tags : post.tags ? true : false,
+          has_tags : post.tags.length ? true : false,
           tags : post.tags && post.tags.map ? post.tags.map(function(tag) {
             var t = tag.toLowerCase();
             return {
@@ -70,19 +70,19 @@ function(head, req) {
       }),
       /*page_skip : function(){
         var result = [];
-        log("this.posts.length:"+this.posts.length);
+        //log("this.posts.length:"+this.posts.length);
         for(var i = 0; i < this.posts.length/req.query.limit; i++){
           result.push(i*req.query.limit)
         }
-        log("result:"+result);
+        //log("result:"+result);
         return result;
       },*/
       older : function(nextkey) {
-        log("older key: "+key+","+nextkey);
+        //log("older key: "+key+","+nextkey);
         return path.older(key);
       },
       newer : function(key) {
-        log("newer key");
+        //log("newer key");
         return path.newer(key);
       },
       "5" : path.limit(5),
