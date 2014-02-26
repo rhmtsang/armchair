@@ -1,0 +1,12 @@
+{
+  "name" : "Physical Part",
+  "title" : "",
+  "fields" : [
+    { "label" : "Part name", "type" : ["text"] },
+    { "label" : "Quantity" , "type" : ["text"] },
+    { "label" : "Mass" , "type" : ["text"] },
+    { "label" : "Analysis Result", "type" : ["document","analysis-result"], "array" : true },
+    { "label" : "Efficiency", "type" : ["document","efficiency"], "array" : true }
+    
+  ]
+}

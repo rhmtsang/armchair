@@ -32,6 +32,8 @@ function(head, req) {
         }
       }
 
+      //log('post:'+JSON.stringify(post));
+
       var stash = {
         header : {
           index : indexPath,
@@ -56,10 +58,14 @@ function(head, req) {
         },
         footer : {},
         scripts : {},
+        doc : JSON.stringify(post),
         post_id : post._id,
         date : post.created_at,
         title : post.title,
         fields : post.fields,
+        value : function(){ 
+          return post.values[this.label]
+        },
         tags : post.tags.join(', '),
         has_tags : post.tags ? true : false,       
         attachments : attachments,

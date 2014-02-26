@@ -11,7 +11,7 @@
 
     { "label": "Mass", "type" : ["text"] },
     { "label": "Volume", "type" : ["text"] },
-    { "label": "Surface area", "type" : ["text"] }
-  ],
-  "values" : {}
+    { "label": "Surface area", "type" : ["text"] },
+    { "label": "Analysis results", "type" : ["document","analysis-result"], "array" : true }
+  ]
 }

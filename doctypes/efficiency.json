@@ -1,15 +1,14 @@
 {
-  "name" : "Analysis Result",
+  "name" : "Efficiency",
   "title" : "",
   "fields" : [
-    { "label": "Analyzed by (whom)", "type" : ["text"] },
     { "label": "U-238", "type" : ["subform"] ,
       "fields": [ 
         { "label": "Value", "type" : ["text"]}, 
         { "label": "Error", "type" : ["text"]}, 
-        { "label": "Unit", "type" : ["radio"], "options":["Bg/g", "ng/g"]}, 
+        { "label": "Unit", "type" : ["radio"], "options":["fraction", "%"]}, 
         { "label": "Flavor", "type" : ["radio"], "options":["Regular","Exact", "Lower limit","Upper limit"]}
-      ]   
-    } 
+      ]
+    }
   ]
 }

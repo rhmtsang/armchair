@@ -1,0 +1,11 @@
+{
+  "name" : "Simulated Part",
+  "title" : "",
+  "fields" : [
+    { "label": "Part name", "type" : ["text"] },
+    { "label": "MC date", "type" : ["date"] },
+    { "label": "MC source", "type" : ["text"] },
+    { "label": "Efficiency", "type" : ["document","efficiency"], "array" : true }
+    
+  ]
+}

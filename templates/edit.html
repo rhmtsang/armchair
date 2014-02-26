@@ -18,35 +18,25 @@
               <ul id="doctype-dropdown" class="dropdown-menu" role="menu"> </ul>
             </div>
             <hr>
+            <input type="hidden" size="50" id="_id" name="_id" value="">
+            <input type="hidden" size="50" id="_rev" name="_rev" value="">
             <div class="row">  
-              <div class="form-group">
-                <div class="col-sm-12">  
-                 <label class="text-right">Title </label>  
-                </div>  
-                <div class="col-sm-12 ui-widget">  
-                  <input type="text" size="50" id="Title" name="Title" value="">
-                  <input type="hidden" size="50" id="_id" name="_id" value="">
-                  <input type="hidden" size="50" id="_rev" name="_rev" value="">
-                </div> 
-              </div>
-            </div>
-            <div id="form-fields"> </div>
-            <div class="row">
-              <div class="form-group">
-                <div class="col-sm-12">
-                  <label for="tags">Click tags to add them. (split by ',')</label>
-                </div>
-                <div class="col-sm-12">
-                  <input size="50" type="text" name="tags" value="{{tags}}">
-                </div>
-              </div>
-              <div class="form-group">
-                <div class="col-sm-12">
-                  <label for="_attachments">Attach files:</label>
-                </div>
-                <div class="col-sm-12">
-                  <input type="file" name="_attachments" id="_attachments" multiple="multiple" /><br>
-                </div>
+              <div class="col-sm-12">
+                <dl class="dl-horizontal"> 
+                  <div class="form-group">
+                    <dt> <label class="text-right">Title </label> </dt>
+                    <dd> <input type="text" size="50" id="Title" name="Title" value=""> </dd>
+                  </div>
+                  <div id="form-fields"> </div>
+                  <div class="form-group">
+                    <dt> <label for="tags">Click tags to add them. (split by ',')</label> </dt>
+                    <dd> <input size="50" type="text" name="tags" value="{{tags}}"> </dd>
+                  </div>
+                  <div class="form-group">
+                    <dt> <label for="_attachments">Attach files:</label> </dt>
+                    <dd> <input type="file" name="_attachments" id="_attachments" multiple="multiple" /></dd>
+                  </div>
+                </dl>
               </div>
             </div>
             <div class="row">
@@ -112,27 +102,22 @@
       }
       $("#doctype-dropdown").html(dropdownHtml);
       
-      // Function for generating one field in the form
-      function generateFieldHtml(field){
-        html = '';
-
+      // Function for generating one input field
+      function generateInput(field){
+        var html = '';
         // Skip the field if field type is not defined
         if(!field.type[0]){
           return html;
         }
-        html += '<div class="row">' + 
-                        '<div class="form-group">'+
-                          '<div class="col-sm-12"> <label class="text-right">' + field.label + '</label> </div>' + 
-                          '<div class="col-sm-12">';
-
+        
         // Text and date
         if(field.type[0] == "text" || field.type[0] == "date"){
-          html +='<input type="'+ field.type[0] +'" size="50" name="'+field.label+'" value="'+'"></div></div></div>';
+          html +='<input type="'+ field.type[0] +'" size="50" name="'+field.label+'" value="">';//</div></div></div>';
 
         // Document
         }else if(field.type[0] == "document"){
-          html +='<input type="'+ field.type[0] +'" size="50" name="'+field.label+'" value="'+'">'+
-                                   '<div name="'+ field.label +'-button"></div></div></div></div>';
+          html +='<input type="'+ field.type[0] +'" size="50" name="'+field.label+'" value="'+'">';//+
+                                   //'<div name="'+ field.label +'-button"></div>';//</div></div></div>';
 
           // Enable auto complete
           app.db.query(function(doc){ 
@@ -145,7 +130,7 @@
                           success : function(data){
                             //console.log(JSON.stringify(data));
                             var autocompleteList = [];
-                            for(var j = 0; j < data.total_rows-data.offset; j++){
+                            for(var j = 0; j < data.rows.length; j++){
                               autocompleteList.push({label: data.rows[j].value, value: data.rows[j].id});
                             }
                             //console.log(JSON.stringify(autocompleteList));
@@ -182,14 +167,45 @@
               fieldHtml +='</label>';
             };
             //fieldsHtml += '</div></div></div></div>';
-            fieldHtml +='</div></div></div>';
+            //fieldHtml +='</div></div></div>';
             html +=fieldHtml;
         }else if(field.type[0] == "subform"){
           fields = field.fields;
+          html += '&nbsp;</dd>';
           for(var i = 0; i < fields.length; i++){
             html += generateFieldHtml(fields[i]);
           }
         }
+        return html;
+      }
+
+      // Function for generating one field in the form
+      function generateFieldHtml(field){
+        var html = '';
+
+        // Skip the field if field type is not defined
+        if(!field.type[0]){
+          return html;
+        }
+
+        // Generate label
+        html += //'<div class="row">' + 
+                        '<div class="form-group">'+
+                          //'<div class="col-sm-12"> <label class="text-right">' + field.label + '</label> </div>' + 
+                          //'<div class="col-sm-12">';
+                          '<dt>' + field.label + '</dt><dd>'+ 
+                          '<div id="'+field.label+ '-main">';
+
+        // Generate input
+        html += generateInput(field);
+        //console.log(generateInput(field));
+
+        // Add array button
+        if(field.array){
+          html += '<button type="button" class="btn btn-xs btn-default" id="'+field.label+'-array-add"><span class="glyphicon glyphicon-plus"></span></button>'
+        }
+
+        html += '</div></dd></div>';
         return html;
       } // end function: generate field html
 
@@ -203,8 +219,14 @@
             // Generate form
             $('#form-fields').html('');
             var fields = ddoc.doctypes[thiskey].fields;
+            var clickResponse = function(field){ return function (){
+              $('div[id="'+field.label+'-main"]').append(generateInput(field));
+            }};
             for(var i = 0; i < fields.length; i++){
-              $('#form-fields').append(generateFieldHtml(fields[i]));
+              $('#form-fields').append('<dl class="dl-horizontal">'+generateFieldHtml(fields[i])+'</dl>');
+              if(fields[i].array){
+                $('button[id="'+fields[i].label+'-array-add"]').click(clickResponse(fields[i]));
+              }
             }
  
             // Put form onto page
@@ -225,37 +247,54 @@
         e.preventDefault();
 
         // Transfer data from a field in the form to doc object
-        function readField(field){
+        function writeFieldToDoc(field,values){
           if(field.type[0] == 'radio'){
+            values[field.label] = -1;
             for(var j = 0; j < field.options.length; j++){
-              field.value = $('input[id="'+field.label+'-'+field.options[j]+'"]:checked').val() ? j : field.value;
+              values[field.label] = $('input[id="'+field.label+'-'+field.options[j]+'"]:checked').val() ? j : values[field.label];
             }
           }else if (field.type[0] == 'checkbox'){
-            field.value = [];
+            values[field.label] = [];
             for(var j = 0; j < field.options.length; j++){
-              field.value.push($('input[name="'+field.label+'-'+field.options[j]+'"]:checked').val() ? true : false);
+              values[field.label].push($('input[name="'+field.label+'-'+field.options[j]+'"]:checked').val() ? true : false);
             }
           }else if (field.type[0] == 'textarea'){
-            field.value = $('textarea[name="'+ field.label +'"]').val();
+            values[field.label] = $('textarea[name="'+ field.label +'"]').val();
           }else if (field.type[0] == 'subform'){
+            values[field.label] = {};
             for(var i = 0; i < field.fields.length; i++){
-              readField(field.fields[i]);
+              writeFieldToDoc(field.fields[i],values[field.label]);
             }
           }else{
-            field.value = $('input[name="'+field.label+'"]').val();
+            var inputs = $('input[name="'+field.label+'"]')
+            //console.log(inputs);
+            if(field.array){
+              values[field.label] = [];
+              for(var i = 0; i < inputs.length; i++){
+                if(inputs[i].value){
+                  values[field.label].push(inputs[i].value);
+                }
+              }
+            }else{
+              values[field.label] = $('input[name="'+field.label+'"]').val();
+            }
           }
         }
 
         // Transfer data from form to doc object
         var key =  blog.slugifyString($("#doctype").text()).toLowerCase();
+        //console.log('key='+key);
         postDoc.author = $$("#account").userCtx.name;
         postDoc.last_edited_by = postDoc.author;
         postDoc.doctype = key;
         postDoc.title = $("input[name=Title]").val();
 
-        postDoc.fields = ddoc.doctypes[key].fields;
-        for(var i = 0; i < postDoc.fields.length; i++){
-          readField(postDoc.fields[i])
+        //postDoc.fields = ddoc.doctypes[key].fields;
+        if(!postDoc.values){ 
+          postDoc.values = {};
+        }
+        for(var i = 0; i < ddoc.doctypes[key].fields.length; i++){
+          writeFieldToDoc(ddoc.doctypes[key].fields[i],postDoc.values)
         }
 
         var dtags = [], tags = $("input[name=tags]").val().split(",");
@@ -307,29 +346,42 @@
       if (postDoc._id) {
 
         // Fill in one field with existing data in db
-        function fillField(field){
+        function readFieldFromDoc(field,values){
           if(field.type == 'radio'){
-            $('input[id="'+ field.label +'-'+ field.options[field.value] +'"]').prop('checked',true);
+            $('input[id="'+ field.label +'-'+ field.options[values[field.label]] +'"]').prop('checked',true);
           }else if (field.type == 'checkbox'){
             for(var j = 0; j < field.options.length; j++){
-              $('input[name="'+field.label+'-'+field.options[j]+'"]').prop('checked',field.value[j]);
+              $('input[name="'+field.label+'-'+field.options[j]+'"]').prop('checked',values[field.labal][j]);
             }
           }else if (field.type == 'textarea'){
-            $('textarea[name="'+ field.label +'"]').val(field.value);
+            $('textarea[name="'+ field.label +'"]').val(values[field.label]);
           }else if (field.type == 'subform'){
             for(var i = 0; i < field.fields.length; i++){
-              fillField(field.fields[i]);
+              readFieldFromDoc(field.fields[i],values[field.label]);
             }
           }else{
-            $('input[name="'+field.label+'"]').val(field.value);
+            if(field.array){
+              var savedData = values[field.label]; // data in DB, which should be an array
+              for(var i = 0; i < savedData.length; i++){
+                $('button[id="'+field.label+'-array-add"]').click();
+              }
+              var inputs = $('input[name="'+field.label+'"]');
+              for(var i = 0; i < savedData.length; i++){
+                inputs[i].value = values[field.label][i];
+              }
+            }else{
+              //console.log(values);
+              //console.log(field.label);
+              $('input[name="'+field.label+'"]').val(values[field.label]);
+            }
           }
         }
 
         // Fill in the form with existing data
         $('#doctype-'+postDoc.doctype).click();
         $('input[name=Title]').val(postDoc.title);
-        for(var i = 0; i < postDoc.fields.length; i++){
-          fillField(postDoc.fields[i]);
+        for(var i = 0; i < ddoc.doctypes[postDoc.doctype].fields.length; i++){
+          readFieldFromDoc(ddoc.doctypes[postDoc.doctype].fields[i],postDoc.values);
         }
 
         // Delete and confirm delete 

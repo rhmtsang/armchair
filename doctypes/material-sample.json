@@ -8,20 +8,20 @@
     { "label": "Lot number", "type" : ["text"] },
     { "label": "Part number", "type" : ["text"] },
 
-    { "label": "Mass", "type" : ["text"] },
-    { "label": "Volume", "type" : ["text"] },
-    { "label": "Surface area", "type" : ["text"] },
-   
     { "label": "Dimensions", "type" : ["subform"], "fields" : [ 
+      { "label": "Mass", "type" : ["text"] },
+      { "label": "Volume", "type" : ["text"] },
+      { "label": "Surface area", "type" : ["text"] },
       { "label": "Shape", "type" : ["radio"], "options" : ["Cube", "Cylinder", "Sphere","Bottle","Other"] }, 
       { "label": "Width", "type" : ["text"] },
       { "label": "Length", "type" : ["text"] },
       { "label": "Height", "type" : ["text"] },
-      { "label": "Diameter", "type" : ["text"] }],
-      "values" : {}
+      { "label": "Diameter", "type" : ["text"] }]
     },
 
+    { "label": "Counting", "type" : ["document","counting-result"], "array" : true },
+    
+
     { "label": "Remarks", "type" : ["textarea"] }
-  ],
-  "values" : {}
+  ]
 }
