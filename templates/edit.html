@@ -68,6 +68,8 @@
   </body>
   {{>scripts}}
   <script src="../../script/jquery.scrollTo.js"></script>
+  <script src="../../script/generate-field.js"></script>
+  <script src="../../script/read-write-doc.js"></script>
   <script type="text/javascript" charset="utf-8">
     $.couch.app(function(app) {
       var path = app.require("vendor/couchapp/lib/path").init(app.req);
@@ -101,113 +103,6 @@
         }
       }
       $("#doctype-dropdown").html(dropdownHtml);
-      
-      // Function for generating one input field
-      function generateInput(field){
-        var html = '';
-        // Skip the field if field type is not defined
-        if(!field.type[0]){
-          return html;
-        }
-        
-        // Text and date
-        if(field.type[0] == "text" || field.type[0] == "date"){
-          html +='<input type="'+ field.type[0] +'" size="50" name="'+field.label+'" value="">';//</div></div></div>';
-
-        // Document
-        }else if(field.type[0] == "document"){
-          html +='<input type="'+ field.type[0] +'" size="50" name="'+field.label+'" value="'+'">';//+
-                                   //'<div name="'+ field.label +'-button"></div>';//</div></div></div>';
-
-          // Enable auto complete
-          app.db.query(function(doc){ 
-                          //log('type:'+field.type[1])
-                            emit(doc.doctype,doc.title);
-                        }, null, "javascript",{   
-                          label : field.label,
-                          startkey : field.type[1],
-                          endkey : field.type[1],
-                          success : function(data){
-                            //console.log(JSON.stringify(data));
-                            var autocompleteList = [];
-                            for(var j = 0; j < data.rows.length; j++){
-                              autocompleteList.push({label: data.rows[j].value, value: data.rows[j].id});
-                            }
-                            //console.log(JSON.stringify(autocompleteList));
-                            //console.log('f='+fields);
-                            //console.log('i='+i);
-                            //$('input[name="'+field.label+'"]').autocomplete({ 
-                            $('input[name="'+this.label+'"]').autocomplete({ 
-                              source: autocompleteList,
-                              messages: {
-                                          noResults: '',
-                                          results: function() {}
-                                        }
-                            });
-                          }
-                        });
-
-        // Textarea
-        }else if(field.type[0] == "textarea"){
-          html +='<textarea name="' + field.label + '" rows="10" cols="80"></textarea>';
-
-        // Checkbox and radio
-        }else if(field.type[0] == "checkbox" || field.type[0] == "radio"){
-          //fieldsHtml += '<div class="btn-group" data-toggle="buttons">';  //cannot set to active programmatically
-          fieldHtml = '';
-            for(var j = 0; j < field.options.length; j++){
-              fieldHtml +='<label class="btn btn-default">';
-              if(field.type[0] == "radio"){
-                fieldHtml +='<input type="'+ field.type[0] +'" name="'+field.label+'" id="'+field.label+'-'+field.options[j]+'" value="'+j+'"> '+
-                                          field.options[j];
-                //console.log( '<input type="'+ field.type[0] +'" name="'+field.label+'" id="'+field.label+'-'+field.options[j]+'" value="'+j+'"> ');
-              }else if(field.type[0] == "checkbox"){
-                fieldHtml +='<input type="'+ field.type[0] +'" name="'+field.label+'-'+field.options[j]+'"> '+ field.options[j];
-              }
-              fieldHtml +='</label>';
-            };
-            //fieldsHtml += '</div></div></div></div>';
-            //fieldHtml +='</div></div></div>';
-            html +=fieldHtml;
-        }else if(field.type[0] == "subform"){
-          fields = field.fields;
-          html += '&nbsp;</dd>';
-          for(var i = 0; i < fields.length; i++){
-            html += generateFieldHtml(fields[i]);
-          }
-        }
-        return html;
-      }
-
-      // Function for generating one field in the form
-      function generateFieldHtml(field){
-        var html = '';
-
-        // Skip the field if field type is not defined
-        if(!field.type[0]){
-          return html;
-        }
-
-        // Generate label
-        html += //'<div class="row">' + 
-                        '<div class="form-group">'+
-                          //'<div class="col-sm-12"> <label class="text-right">' + field.label + '</label> </div>' + 
-                          //'<div class="col-sm-12">';
-                          '<dt>' + field.label + '</dt><dd>'+ 
-                          '<div id="'+field.label+ '-main">';
-
-        // Generate input
-        html += generateInput(field);
-        //console.log(generateInput(field));
-
-        // Add array button
-        if(field.array){
-          html += '<button type="button" class="btn btn-xs btn-default" id="'+field.label+'-array-add"><span class="glyphicon glyphicon-plus"></span></button>'
-        }
-
-        html += '</div></dd></div>';
-        return html;
-      } // end function: generate field html
 
       // Generate form when doctype dropdown menu buttons are clicked 
       for (var key in this.ddoc.doctypes) {
@@ -220,10 +115,10 @@
             $('#form-fields').html('');
             var fields = ddoc.doctypes[thiskey].fields;
             var clickResponse = function(field){ return function (){
-              $('div[id="'+field.label+'-main"]').append(generateInput(field));
+              $('div[id="'+field.label+'-main"]').append(generateInput(app,field));
             }};
             for(var i = 0; i < fields.length; i++){
-              $('#form-fields').append('<dl class="dl-horizontal">'+generateFieldHtml(fields[i])+'</dl>');
+              $('#form-fields').append('<dl class="dl-horizontal">'+generateFieldHtml(app,fields[i])+'</dl>');
               if(fields[i].array){
                 $('button[id="'+fields[i].label+'-array-add"]').click(clickResponse(fields[i]));
               }
@@ -245,41 +140,6 @@
 
         // Prevent submit because we will use ajaxSubmit()
         e.preventDefault();
-
-        // Transfer data from a field in the form to doc object
-        function writeFieldToDoc(field,values){
-          if(field.type[0] == 'radio'){
-            values[field.label] = -1;
-            for(var j = 0; j < field.options.length; j++){
-              values[field.label] = $('input[id="'+field.label+'-'+field.options[j]+'"]:checked').val() ? j : values[field.label];
-            }
-          }else if (field.type[0] == 'checkbox'){
-            values[field.label] = [];
-            for(var j = 0; j < field.options.length; j++){
-              values[field.label].push($('input[name="'+field.label+'-'+field.options[j]+'"]:checked').val() ? true : false);
-            }
-          }else if (field.type[0] == 'textarea'){
-            values[field.label] = $('textarea[name="'+ field.label +'"]').val();
-          }else if (field.type[0] == 'subform'){
-            values[field.label] = {};
-            for(var i = 0; i < field.fields.length; i++){
-              writeFieldToDoc(field.fields[i],values[field.label]);
-            }
-          }else{
-            var inputs = $('input[name="'+field.label+'"]')
-            //console.log(inputs);
-            if(field.array){
-              values[field.label] = [];
-              for(var i = 0; i < inputs.length; i++){
-                if(inputs[i].value){
-                  values[field.label].push(inputs[i].value);
-                }
-              }
-            }else{
-              values[field.label] = $('input[name="'+field.label+'"]').val();
-            }
-          }
-        }
 
         // Transfer data from form to doc object
         var key =  blog.slugifyString($("#doctype").text()).toLowerCase();
@@ -344,38 +204,6 @@
 
       // If document already exists, i.e. it's now being edited
       if (postDoc._id) {
-
-        // Fill in one field with existing data in db
-        function readFieldFromDoc(field,values){
-          if(field.type == 'radio'){
-            $('input[id="'+ field.label +'-'+ field.options[values[field.label]] +'"]').prop('checked',true);
-          }else if (field.type == 'checkbox'){
-            for(var j = 0; j < field.options.length; j++){
-              $('input[name="'+field.label+'-'+field.options[j]+'"]').prop('checked',values[field.labal][j]);
-            }
-          }else if (field.type == 'textarea'){
-            $('textarea[name="'+ field.label +'"]').val(values[field.label]);
-          }else if (field.type == 'subform'){
-            for(var i = 0; i < field.fields.length; i++){
-              readFieldFromDoc(field.fields[i],values[field.label]);
-            }
-          }else{
-            if(field.array){
-              var savedData = values[field.label]; // data in DB, which should be an array
-              for(var i = 0; i < savedData.length; i++){
-                $('button[id="'+field.label+'-array-add"]').click();
-              }
-              var inputs = $('input[name="'+field.label+'"]');
-              for(var i = 0; i < savedData.length; i++){
-                inputs[i].value = values[field.label][i];
-              }
-            }else{
-              //console.log(values);
-              //console.log(field.label);
-              $('input[name="'+field.label+'"]').val(values[field.label]);
-            }
-          }
-        }
 
         // Fill in the form with existing data
         $('#doctype-'+postDoc.doctype).click();

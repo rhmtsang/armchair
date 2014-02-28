@@ -31,7 +31,7 @@ function(doc, req) {
     },
     footer : {},
     scripts : {},
-    pageTitle : doc ? "Edit: "+doc.title : "Create a new post",
+    pageTitle : doc ? doc.title : "Perform a new calculation",
     assets : path.asset(),
     fields : []
   };

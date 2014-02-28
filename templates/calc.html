@@ -1,109 +1,327 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>{{ title }} : {{ blogName }}</title>
+    <title>{{ pageTitle }}</title>
   </head>
   <body>
     <div class="container-fluid">
       {{>header}}
       <div class="row">
-        <div class="col-sm-12">
-          <h3>{{ title }}</h3>
+        <!-- form to create a post -->
+        <div class="col-sm-6">
+          <h3 id="pageTitle">{{pageTitle}}</h3>
+          <form role="form" id="new-post" action="new.html" method="post">
+            <input type="hidden" size="35" id="_id" name="_id" value="">
+            <input type="hidden" size="35" id="_rev" name="_rev" value="">
+            <div class="row">  
+              <div class="col-sm-12">
+                <dl class="dl-horizontal"> 
+                  <div class="form-group">
+                    <dt> <label class="text-right">Title </label> </dt>
+                    <dd> <input type="text" size="35" id="Title" name="Title" value=""> </dd>
+                  </div>
+                  <div id="form-fields"> </div>
+                  <div class="form-group">
+                  <dt> <label for="tags">Click tags to add them. (split by ',')</label> </dt>
+                    <dd> <input size="35" type="text" name="tags" value="{{tags}}"> </dd>
+                  </div>
+                  <div class="form-group">
+                    <dt> <label for="_attachments">Attach files:</label> </dt>
+                    <dd> <input type="file" name="_attachments" id="_attachments" multiple="multiple" /></dd>
+                  </div>
+                  <button id='calculate-button' type="button" class="btn btn-primary">Calculate &rarr;</button> 
+                </dl>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-sm-12">
+                <div id="tagcloud"></div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-sm-3" id="show-delete"> </div>
+              <div class="col-sm-3" id="show-confirm-delete"></div>
+              <div class="col-sm-3">
+              <!--  <button id="preview" type="button" class="btn btn-default">Preview</button> -->
+              </div>
+              <div class="col-sm-3">
+                <button type="submit" class="btn btn-primary">Save &rarr;</button> 
+              </div>
+              <span id="saved" style="display:none;">Saved</span>
+            </div>
+          </form>
+          <!-- <a target="_new" href="http://warpedvisions.org/projects/markdown-cheat-sheet/">Markdown help</a>  -->
+          <!-- <form action="/file-upload" class="dropzone" id="my-awesome-dropzone"></form> -->
+        </div>
+        <div class="col-sm-6">
+          <div id="calc-results"></div>
         </div>
       </div>
-      <div id="fields"></div>
-      <!-- Old begin: <hr>
-      {{#fields}}
-        <div class="row">
-          <div class="col-sm-12">
-            {{label}}: {{value}}
-          </div>
-        </div>
-      {{/fields}}
-     <hr> Old end. -->
-      Attachments:
-      {{#attachments}}
       <div class="row">
         <div class="col-sm-12">
-           <a href="../../../../{{post_id}}/{{.}}"> {{.}} </a>
-        </div>
-      </div>
-      {{/attachments}}
-      <div class="row">
-        <div class="col-sm-12">
-          Tags: {{tags}}
+          <div id="show-preview"></div>
         </div>
       </div>
       {{>footer}}
-    </div>    
+    </div>
   </body>
   {{>scripts}}
+  <script src="../../script/jquery.scrollTo.js"></script>
+  <script src="../../script/generate-field.js"></script>
+  <script src="../../script/read-write-doc.js"></script>
   <script type="text/javascript" charset="utf-8">
     $.couch.app(function(app) {
+      var path = app.require("vendor/couchapp/lib/path").init(app.req);
+      var ddoc = this.ddoc;
+      var postForm, blog = app.require("lib/blog");
+
+      // Extend the tagcloud so that clicks add tags to the current post ()
+      var tagcloud = $.extend(true, {}, this.ddoc.evently.tagcloud, {
+        _init : {
+          selectors : {
+            a : {
+              click : function() {
+                var tag = $(this).text();
+                var tags = $("input[name=tags]").val();
+                if (tags) tags = tags+", ";
+                $("input[name=tags]").val(tags + tag);
+                return false;
+              }
+            }
+          }
+        }
+      });
+      $("#tagcloud").evently(tagcloud, this);
+
       app.post_id = "{{post_id}}";
       $("#profile").evently($.extend(true, {}, app.ddoc.vendor.couchapp.evently.profile, app.ddoc.evently.profile), app);
       $.evently.connect($("#account"), $("#profile"), ["loggedIn", "loggedOut"]);
 
-      function displayField(field,values){
-        html = '';
-
-        // Skip the field if field type is not defined
-        if(!field.type[0]){
-          return html;
-        }
-        //html += '<div class="row">' + 
-        //                  '<div class="col-sm-12"> <label class="text-right">' + field.label + '&nbsp;:&nbsp;</label>';
-                           //+'</div>' + '<div class="col-sm-6">';
-        html += '<li><label class="text-right">' + field.label + '&nbsp;:&nbsp;</label>';
-        // Text and date
-        if(field.type[0] == "text" || field.type[0] == "date"){
-          html += values[field.label];//  '<input type="'+ field.type[0] +'" size="50" name="'+field.label+'" value="'+'"></div></div></div>';
-
-        // Document
-        }else if(field.type[0] == "document"){
-          html += values[field.label];//  '<input type="'+ field.type[0] +'" size="50" name="'+field.label+'" value="'+'"></div></div></div>';
-          //html +='<input type="'+ field.type[0] +'" size="50" name="'+field.label+'" value="'+'">'+
-          //                         '<div name="'+ field.label +'-button"></div></div></div></div>';
-
-        // Textarea
-        }else if(field.type[0] == "textarea"){
-          html += values[field.label];//  '<input type="'+ field.type[0] +'" size="50" name="'+field.label+'" value="'+'"></div></div></div>';
-          //html +='<textarea name="' + field.label + '" rows="10" cols="80"></textarea>';
-
-        // Radio
-        }else if(field.type[0] == "radio"){
-          html += field.options[values[field.label]];
-
-        // Checkbox
-        }else if(field.type[0] == "checkbox"){
-          var checked = [];
-          for(var j = 0; j < values[field.label].length; j++){
-            checked.push(field.options[values[field.label]]);
-          }
-          html += checked.join(' ,');
-
-        // Subform
-        }else if(field.type[0] == "subform"){
-          fields = field.fields;
-          html += '<ul>';
-          for(var i = 0; i < fields.length; i++){
-            html += displayField(fields[i],values[field.label]);
-          }
-          html += '</ul>';
-        }
-        html += '</li>';//'</div></div>';
-        return html;
-      } // end function: generate field html
-    
       // Main 
       var postDoc = {{{doc}}};
+      var prevRev = JSON.stringify(postDoc);
+
+      $('#calculate-button').click(function(){
+
+        // Get array of phy part ids from the form
+        var phyPartIds = $('input[name="Physical Parts"]').map(function(){
+          return this.value;
+        }).get().filter(function(a){
+          return a!=='';
+        });
+
+        // JQuery.Deferred() wrapper for openDoc
+        // arguments: id = id of the doc; callback = callback on success with args id, data
+        function loadDoc(id, callback){
+          var dfd = $.Deferred();
+          app.db.openDoc(id, {success : function(data){
+            callback(id,data);
+            dfd.resolve();
+          }})
+          return dfd.promise();
+        }
+
+        // Grand Unified Variable which stores all info needed to calculate total background
+        var phyParts = {};
+
+        // openDoc calls
+        var phyPartsDfds = [];
+        var effDfds = [];
+        var anaDfds = [];
+
+        // Populate deferreds array for phy part opendoc calls
+        for(var i = 0; i < phyPartIds.length; i++){
+          phyPartsDfds.push(loadDoc(phyPartIds[i], function(id,data){  
+            phyParts[id] = phyParts[id] || {};
+            phyParts[id]['Data'] = data;
+          }));
+        }
+
+        // Actually retrieve phy part docs.
+        $.when.apply($,phyPartsDfds).then(function(){
+          for(var p in phyParts){
+            if(phyParts.hasOwnProperty(p)){
+              var effIds = phyParts[p]['Data'].values['Efficiency'];
+
+              // Populate deferreds array for eff doc opendoc calls
+              for(var i = 0; i < effIds.length; i++){
+                effDfds.push(loadDoc(effIds[i], function(p){ return function(id,data){  
+                  phyParts[p]['Efficiency'] = phyParts[p]['Efficiency'] || {};
+                  phyParts[p]['Efficiency'][id] = data;
+                }}(p)));
+              }
+
+              // Populate deferreds array for ana doc opendoc calls
+              var anaIds = phyParts[p]['Data'].values['Analysis Result'];
+              for(var i = 0; i < anaIds.length; i++){
+                anaDfds.push(loadDoc(anaIds[i], function(p){ return function(id,data){  
+                  phyParts[p]['Analysis Result'] = phyParts[p]['Analysis Result'] || {};
+                  phyParts[p]['Analysis Result'][id] = data;
+                }}(p)));
+              }
+            }
+          }
+
+          // Actually retrieve eff and ana docs.
+          $.when.apply($,effDfds).then(function(){
+
+            // Do background calculations here!  XXX
+            // phyParts[__id__]['Data']                     <--  phy part doc
+            // phyParts[__id__]['Efficiency'][__id__]       <--  eff doc
+            // phyParts[__id__]['Analysis Result'][__id__]  <--  ana doc
+
+            // Loop over each phy part
+            var total_counts = 0;
+            for(var p in phyParts){
+              if(!phyParts.hasOwnProperty(p)) continue;
+              var ppDoc = phyParts[p]['Data'];
+              var effMap = phyParts[p]['Efficiency'];
+              var anaMap = phyParts[p]['Analysis Result'];
+
+              // Find mean UConc by looping over each ana doc asso'd with this phy part
+              var meanUConc = 0;
+              var anaMapLength = 0;
+              for(var ana in anaMap){
+                var anaDoc = anaMap[ana];
+                meanUConc += parseFloat(anaDoc.values['U-238']['Value']);
+                anaMapLength += 1;
+              }
+              meanUConc /= anaMapLength;
+          
+              // Find mean UEff by looping over each eff doc asso'd with this phy part
+              var meanUEff = 0;
+              var effMapLength = 0;
+              for(var eff in effMap){
+                var effDoc = effMap[eff];
+                meanUEff += parseFloat(effDoc.values['U-238']['Value']);
+                effMapLength += 1;
+              }
+              meanUEff /= effMapLength;
+
+              // Increment total_counts by the counts due to this phy part.
+              total_counts += meanUEff * meanUConc;
+            }
+
+            // Display result
+            //$('#calc-results').append(JSON.stringify(phyParts));
+            $('#calc-results').html('<h3>Results</h3>');
+            //$('#calc-results').append('Radioassay: U-238 concentration = '+anaDocs[0].values['U-238']['Value'] + '<br>');
+            //$('#calc-results').append('Monte Carlo: U-238 efficiency = '+effDocs[0].values['U-238']['Value'] + '<br>');
+            $('#calc-results').append('Total counts due to U-238 = '+parseFloat(total_counts.toPrecision(12)) + '<br>');
+          });
+        });
+      });
+
+      // Save document on Submit
+      //$('label[for=body]').append(' <em>with '+(postDoc.format||'html')+'</em>');
+      $("form#new-post").submit(function(e) {
+
+        // Prevent submit because we will use ajaxSubmit()
+        e.preventDefault();
+
+        // Transfer data from form to doc object
+        //var key =  blog.slugifyString($("#doctype").text()).toLowerCase();
+        var key = 'background-calculation';
+        //console.log('key='+key);
+        postDoc.author = $$("#account").userCtx.name;
+        postDoc.last_edited_by = postDoc.author;
+        postDoc.doctype = key;
+        postDoc.title = $("input[name=Title]").val();
+
+        //postDoc.fields = ddoc.doctypes[key].fields;
+        if(!postDoc.values){ 
+          postDoc.values = {};
+        }
+        for(var i = 0; i < ddoc.doctypes[key].fields.length; i++){
+          writeFieldToDoc(ddoc.doctypes[key].fields[i],postDoc.values)
+        }
+
+        var dtags = [], tags = $("input[name=tags]").val().split(",");
+        for(var i in tags) {
+          if(tags[i]) dtags.push($.trim(tags[i]));
+        }
+        postDoc.tags = dtags;
+        if (!postDoc.created_at) {
+          postDoc.created_at = new Date();
+        }
+        if (!postDoc._id) {
+          // Custom doc id goes here
+          //postDoc._id = blog.slugifyString(postDoc.title);
+        }else{
+          postDoc.last_edited_by = $$("#account").userCtx.name;
+          postDoc.last_edited_at = new Date();
+          postDoc._attachments = postDoc._attachments || {};
+          var attname = "#rev-"+postDoc._rev.split("-")[0];
+          postDoc._attachments[attname] = {content_type :"application/json", data : Base64.encode(prevRev)};
+        }
+
+        // Save doc to couchdb
+        app.db.saveDoc(postDoc, {
+          success : function(resp) {
+            //alert(""+JSON.stringify(resp));
+            $("#saved").text("Saved _rev: "+resp.rev).fadeIn(500).fadeOut(6000);
+            $('#pageTitle').html('Editing <a href="'+path.show('post',resp.id)+'">'+resp.id+'</a> by '+postDoc.author);
+            //console.log(JSON.stringify($('#_attachments').val()));
+            // $('input#_attachments').files
+            if($('input#_attachments').val().length > 0){
+              $('#_id').val(resp.id);
+              $('#_rev').val(resp.rev);
+              $('form#new-post').ajaxSubmit({
+                // Submit the form with the attachment
+                url: '/' + app.db.name + '/' + resp.id,
+                success: function(response) {
+                  //alert("Your attachment was submitted.")
+                }
+              })
+            }
+          }
+        });
+
+        return false;
+      });
+
 
       // Generate form
-      $('#fields').html('');
-      var fields = app.ddoc.doctypes[postDoc.doctype].fields;
-      for(var i = 0; i < postDoc.fields.length; i++){
-        $('#fields').append('<ul>'+displayField(postDoc.fields[i],postDoc.values)+'</ul>');
+      $('#form-fields').html('');
+      var fields = ddoc.doctypes['background-calculation'].fields;
+      var clickResponse = function(field){ return function (){
+        $('div[id="'+field.label+'-main"]').append(generateInput(app,field));
+      }};
+      for(var i = 0; i < fields.length; i++){
+        $('#form-fields').append('<dl class="dl-horizontal">'+generateFieldHtml(app,fields[i])+'</dl>');
+        if(fields[i].array){
+          $('button[id="'+fields[i].label+'-array-add"]').click(clickResponse(fields[i]));
+        }
       }
+
+      // If document already exists, i.e. it's now being edited
+      if (postDoc._id) {
+
+        // Fill in the form with existing data
+        //$('#doctype-'+postDoc.doctype).click();
+        $('input[name=Title]').val(postDoc.title);
+        for(var i = 0; i < ddoc.doctypes[postDoc.doctype].fields.length; i++){
+          readFieldFromDoc(ddoc.doctypes[postDoc.doctype].fields[i],postDoc.values);
+        }
+
+        // Delete and confirm delete 
+        $('#show-delete').html(' <button class="btn btn-default" type="button" id="delete"> Delete Post </button> ');
+        $("#delete").click(function() {
+          var html = ' <button type="button" id="confirm-delete" class="btn btn-danger">Confirm Delete</button> '; 
+          $('#show-confirm-delete').html(html);
+            $("#confirm-delete").click(function() {
+              app.db.removeDoc(postDoc, {
+                success : function(resp) {
+                  $("#pageTitle").text("Deleted "+resp.id);
+                  $('form#new-post input').attr('disabled', true);
+                }
+              });
+              return false;
+            });
+          return false;
+        });
+      }
+
     });
 
   </script>

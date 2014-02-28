@@ -1,0 +1,7 @@
+{
+  "name" : "Background Calculation",
+  "title" : "",
+  "fields" : [
+    { "label": "Physical Parts", "type" : ["document","physical-part"], "array" : true }
+  ]
+}
